@@ -1,15 +1,17 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from api.endpoints.match import match
+from api.endpoints.offers import scan_and_save_offers
+from api.endpoints.supabase import (
+    supabase_delete,
+    supabase_insert,
+    supabase_select,
+    supabase_update,
+)
 
-
-@api_view(['POST'])
-def match(request):
-    jobs = request.data.get('jobs', [])
-    skills = request.data.get('skills', []) 
-    
-    job_store = {}
-    for text, job_id in jobs:
-        if True: # TODO decide to add or not add this to job_store 
-            job_store[job_id] = text
-    
-    return Response({'matched_ids': list(job_store.keys())})
+__all__ = [
+    'match',
+    'supabase_select',
+    'supabase_insert',
+    'supabase_update',
+    'supabase_delete',
+    'scan_and_save_offers',
+]

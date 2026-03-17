@@ -1,3 +1,9 @@
 from django.contrib import admin
+from .models import Offer
 
-# Register your models here.
+
+@admin.register(Offer)
+class OfferAdmin(admin.ModelAdmin):
+	list_display = ('id', 'title', 'salary', 'remote', 'created_at')
+	list_filter = ('remote', 'created_at')
+	search_fields = ('title', 'description')

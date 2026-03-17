@@ -10,10 +10,31 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv(dotenv_path):
+    if not dotenv_path.exists():
+        return
+
+    for raw_line in dotenv_path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+
+        key, value = line.split('=', 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+
+        if key:
+            os.environ.setdefault(key, value)
+
+
+_load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -125,3 +146,7 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Supabase REST API configuration.
+SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '')
