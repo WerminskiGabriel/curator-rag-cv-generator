@@ -8,4 +8,5 @@ urlpatterns = [
     path('supabase/update/', views.supabase_update),
     path('supabase/delete/', views.supabase_delete),
     path('offers/scan-save/', views.scan_and_save_offers),
+    path('generate-cv/', views.auto_generate_cv),
 ]
