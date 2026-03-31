@@ -22,6 +22,8 @@ services:
    depends_on:
      - db
    environment:
+     PYTHONPATH: /app/Backend
+     DJANGO_SETTINGS_MODULE: Backend.settings
      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
      DEBUG: ${DEBUG}
      DJANGO_LOGLEVEL: ${DJANGO_LOGLEVEL}

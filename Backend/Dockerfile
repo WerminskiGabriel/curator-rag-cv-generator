@@ -5,7 +5,7 @@ FROM python:3.13-slim AS builder
 RUN mkdir /app
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /app/Backend
 
 # Set environment variables to optimize Python
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED=1
 RUN pip install --upgrade pip
 
 # Copy the requirements file first (better caching)
-COPY Backend/requirements.txt /app/
+COPY Backend/requirements.txt ./
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -23,8 +23,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Stage 2: Production stage
 FROM python:3.13-slim
 
+# Set environment variables to optimize Python
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 RUN useradd -m -r appuser && \
-   mkdir /app && \
+   mkdir -p /app/Backend && \
    chown -R appuser /app
 
 # Copy the Python dependencies from the builder stage
@@ -32,14 +36,10 @@ COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/pyth
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /app/Backend
 
 # Copy application code
-COPY --chown=appuser:appuser . .
-
-# Set environment variables to optimize Python
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+COPY --chown=appuser:appuser Backend/ .
 
 # Switch to non-root user
 USER appuser
@@ -48,4 +48,4 @@ USER appuser
 EXPOSE 8000
 
 # Start the application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "my_docker_django_app.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--chdir", "/app/Backend", "Backend.wsgi:application"]
