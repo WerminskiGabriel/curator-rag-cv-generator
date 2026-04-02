@@ -1,5 +1,5 @@
 import os
-from .profile import MY_PROFILE
+from .profile_mockup import MY_PROFILE
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'cv_template.typ')
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'generated_cvs')
