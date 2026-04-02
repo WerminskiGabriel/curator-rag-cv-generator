@@ -1,12 +1,21 @@
 from django.urls import path
-from . import views
+from .views import offer_views, resume_views, supabase_views, document_views
+
 
 urlpatterns = [
-    path('match/', views.match),
-    path('supabase/select/', views.supabase_select),
-    path('supabase/insert/', views.supabase_insert),
-    path('supabase/update/', views.supabase_update),
-    path('supabase/delete/', views.supabase_delete),
-    path('offers/scan-save/', views.scan_and_save_offers),
-    path('generate-cv/', views.auto_generate_cv),
+    path('offers/match/', offer_views.match),
+    path('offers/scan-save/', offer_views.scan_and_save_offers),
+
+    path('supabase/select/', supabase_views.supabase_select),
+    path('supabase/insert/', supabase_views.supabase_insert),
+    path('supabase/update/', supabase_views.supabase_update),
+    path('supabase/delete/', supabase_views.supabase_delete),
+
+
+    path('resume/generate-cv/', resume_views.auto_generate_cv),
+
+    path('documents/import_file', document_views.import_file),
+    path('documents/import_txt', document_views.import_txt),
+
+
 ]
