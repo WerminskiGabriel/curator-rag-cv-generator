@@ -43,7 +43,7 @@ def txt_upload_to_model(documents_id):
 def txt_extract(documents_id):
     file = get_documents_file(documents_id)
 
-    file_path = file.path()
+    file_path = file.path
     txt_from_file = parser_path(file_path)
     return txt_from_file
 
@@ -58,4 +58,4 @@ def document_to_dict(doc):
             "filePath": doc.file.url if doc.file else None,
         }
     except ValueError:
-        return {"error:Document does not exist"}
+        return {"error": "Document does not exist"}

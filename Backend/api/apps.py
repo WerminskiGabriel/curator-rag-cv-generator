@@ -6,4 +6,4 @@ class ApiConfig(AppConfig):
     name = "api"
 
     def ready(self):
-        from .signals import reveiver
+        from .signals import signal
