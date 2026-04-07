@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'frontend',
 ]
 
 MIDDLEWARE = [
@@ -78,7 +79,7 @@ ROOT_URLCONF = 'Backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -149,7 +150,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Supabase REST API configuration.
-#SUPABASE_URL = os.getenv('SUPABASE_URL', '')
-#SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '')
+# SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+# SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '')

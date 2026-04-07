@@ -21,6 +21,8 @@ services:
      - "8000:8000"
    depends_on:
      - db
+   volumes:
+     - .:/app
    environment:
      PYTHONPATH: /app/Backend
      DJANGO_SETTINGS_MODULE: Backend.settings

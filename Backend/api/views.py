@@ -17,4 +17,3 @@ __all__ = [
     'scan_and_save_offers',
     'auto_generate_cv',
 ]
-
