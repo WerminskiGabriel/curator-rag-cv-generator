@@ -3,7 +3,7 @@ from urllib import error, parse, request as urllib_request
 
 from django.conf import settings
 from rest_framework import status
-from api.services.tools import extract_bearer_token
+from .tools import extract_bearer_token
 
 def to_eq_filter_query(filters):
     params = {}

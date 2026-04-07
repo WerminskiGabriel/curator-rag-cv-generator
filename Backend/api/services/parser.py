@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 
 def parser_path(file_path):
@@ -11,6 +10,8 @@ def parser_path(file_path):
         txt_str = pdf_parser(file_path)
     elif extension in ["png", "jpg", "jpeg"]:
         txt_str = img_parser(file_path)
+    elif extension == "docx":
+        txt_str = doc_parser(file_path)
     else:
         raise Exception("File extension not supported")
     return txt_str
@@ -27,7 +28,7 @@ def pdf_parser(file_path):
 
     # TextPage.extractDICT()
     doc = fitz.open(file_path)
-    full_text = ""
+    full_text = ["FILETYPE:PDF\n"]
     for page in doc:
         blocks = page.get_text("blocks")
         # extracts a page’s text blocks as a list of items like:
@@ -36,8 +37,9 @@ def pdf_parser(file_path):
         for block in blocks:
             # block_type == 0 -> text type , 1 -> image type
             if block[6] == 0:
-                full_text += block[4]  # + "\n"
-    return full_text
+                full_text.append(block[4])  # + "\n"
+
+    return "".join(full_text)
 
 
 def img_parser(file_path):
@@ -46,7 +48,7 @@ def img_parser(file_path):
     except ImportError as e:
         print(f"make sure u installed pymupdf {e}")
 
-    full_text = ""
+    full_text = ["FILETYPE:img\n"]
     doc = fitz.open(file_path)
 
     for page in doc:
@@ -64,14 +66,26 @@ def img_parser(file_path):
             for block in blocks:
                 # block_type == 0 -> text type , 1 -> image type
                 if block[6] == 0:
-                    full_text += block[4]  # + "\n"
-    return full_text
+                    full_text.append(block[4])
+
+    return "".join(full_text)
 
 
-"""
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
-files_path = ROOT_DIR / "media" / "import_files" / "CV_NO_COLUMNS_1.pdf" 
-files_path = ROOT_DIR / "media" / "import_files" / "CV_NO_COLUMNS_1.png" 
-files_path = str(files_path)
-print( parser_path(files_path) )
-"""
+def doc_parser(file_path):
+    try:
+        from docx import Document
+    except ImportError as e:
+        print(e)
+
+    # Load the document
+    doc = Document(file_path)
+
+    # Extract text from all paragraphs
+    full_text = ["FILETYPE:DOCX\n"]
+    for paragraph in doc.paragraphs:
+        full_text.append(paragraph.text)
+
+    # Join all paragraphs into a single string
+    text_content = '\n'.join(full_text)
+
+    return text_content

@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from api.services.supabase_client import (
+from ..services.supabase_client import (
     extract_bearer_token,
     supabase_request,
     to_eq_filter_query,

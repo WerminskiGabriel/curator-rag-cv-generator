@@ -2,14 +2,15 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from api.services.job_fetcher import fetch_jobs
-from api.services.offer_scanner import filter_good_offers
-from api.services.cv_generator import generate_cv_for_offer
+from ..services.offers_logic import fetch_offers
+from ..services.offers_logic import filter_good_offers
+from ..services.resume_generation import generate_cv_for_offer
+
 
 @api_view(['GET', 'POST'])
 def auto_generate_cv(request):
     try:
-        jobs = fetch_jobs()
+        jobs = fetch_offers()
 
         good_offers = filter_good_offers(jobs)
 
