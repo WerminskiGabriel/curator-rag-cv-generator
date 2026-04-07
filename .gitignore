@@ -126,3 +126,6 @@ dmypy.json
 # VsCode settings
 .idea/
 .vscode/
+
+staticfiles/
+media/
