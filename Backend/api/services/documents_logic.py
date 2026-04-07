@@ -1,6 +1,7 @@
 from .. import models
 from .parser import parser_path
 from ..models import Documents
+from ...cv_engine.services.embedder import process_document_to_db
 
 
 # ----------[ GETTERS ]----------
@@ -37,6 +38,7 @@ def txt_upload_to_model(documents_id):
     txt = txt_extract(documents_id)
     if txt:
         models.Documents.objects.filter(id=documents_id).update(text=txt, processed=True)
+        process_document_to_db(models.Documents.objects.get(id=documents_id))
 
 
 # --------------------
