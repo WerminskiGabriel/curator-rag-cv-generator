@@ -1,8 +1,9 @@
-def spacy_chunker(text):
-    pass
-
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_core.documents import Document
+
+
+def spacy_chunker(text):
+    pass
 
 
 def chunker(document, chunk_size=400, chunk_overlap=200):
@@ -25,12 +26,10 @@ def chunker(document, chunk_size=400, chunk_overlap=200):
         length_function=len
     )
 
-    # Split the text into chunks
     chunks = text_splitter.split_text(document)
     print(f"Document split into {len(chunks)} chunks")
 
-    # Convert to Document objects with metadata
-    documents = []
+    documents_to_save = []
     for i, chunk in enumerate(chunks):
         doc = Document(
             page_content=chunk,
@@ -41,6 +40,6 @@ def chunker(document, chunk_size=400, chunk_overlap=200):
                 "chunk_type": "fixed-size"
             }
         )
-        documents.append(doc)
+        documents_to_save.append(doc)
 
-    return documents
+    return documents_to_save
