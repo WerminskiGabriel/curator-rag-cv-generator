@@ -1,43 +1,59 @@
 services:
- db:
-   image: postgres:17
-   environment:
-     POSTGRES_DB: ${DATABASE_NAME}
-     POSTGRES_USER: ${DATABASE_USERNAME}
-     POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-   ports:
-     - "5432:5432"
-   volumes:
-     - postgres_data:/var/lib/postgresql/data
-   env_file:
-     - .env
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: nlp_postgres
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
 
- django-web:
-   build:
-     context: .
-     dockerfile: Backend/Dockerfile
-   container_name: django-docker
-   ports:
-     - "8000:8000"
-   depends_on:
-     - db
-   volumes:
-     - .:/app
-   environment:
-     PYTHONPATH: /app/Backend
-     DJANGO_SETTINGS_MODULE: Backend.settings
-     DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-     DEBUG: ${DEBUG}
-     DJANGO_LOGLEVEL: ${DJANGO_LOGLEVEL}
-     DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
-     DATABASE_ENGINE: ${DATABASE_ENGINE}
-     DATABASE_NAME: ${DATABASE_NAME}
-     DATABASE_USERNAME: ${DATABASE_USERNAME}
+  django-web:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    container_name: django-docker
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - ollama
+    volumes:
+      - .:/app
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      PYTHONPATH: /app/Backend
+      DJANGO_SETTINGS_MODULE: Backend.settings
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DEBUG: ${DEBUG}
+      DJANGO_LOGLEVEL: ${DJANGO_LOGLEVEL}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      DATABASE_ENGINE: ${DATABASE_ENGINE}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      OLLAMA_BASE_URL: http://ollama:11434
 
-     DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-     DATABASE_HOST: ${DATABASE_HOST}
-     DATABASE_PORT: ${DATABASE_PORT}
-   env_file:
-     - .env
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+    env_file:
+      - .env
+  ollama:
+    image: ollama/ollama
+    container_name: nlp_ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_MAX_LOADED_MODELS=1
 volumes:
-   postgres_data:
+  postgres_data:
+  ollama_data:
+  hf_cache:

@@ -1,10 +1,10 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 
 class PersonalInfo(BaseModel):
     telephone_label: str = Field(description="Formatted phone number for display, e.g., '+48 123 456 789'")
     telephone_link: str = Field(description="Technical tel: link for links, e.g., 'tel:+48123456789'")
-    email: EmailStr = Field(description="Professional contact email address")
+    email: str = Field(description="Professional contact email address")
     github_label: str = Field(description="GitHub profile label, e.g., 'github.com/username'")
     github_link: str = Field(description="Full URL to the GitHub profile, e.g., 'https://github.com/johndoe'")
     linkedin_label: str = Field(description="LinkedIn profile label, e.g., 'linkedin.com/in/username'")

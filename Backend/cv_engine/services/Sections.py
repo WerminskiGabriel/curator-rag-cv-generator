@@ -1,4 +1,4 @@
-from templateJsonDesc import Personal, Skills, Education, Projects, Experience, Layout
+from cv_engine.services.templateJsonDesc import Personal, Skills, Education, Projects, Experience, Layout
 
 SECTIONS = {
     "personal": {

@@ -1,16 +1,16 @@
-from numpy.f2py.auxfuncs import throw_error
 from pydantic import ValidationError
 
-from retriever import retriever
+from cv_engine.services.retriever import retriever
 from langchain_ollama import OllamaLLM
-from Sections import SECTIONS
+from cv_engine.services.sections import SECTIONS
 
 
-def fill_cv_data(profile_id):
+def generate_cv_data_llm(profile_id):
     model = OllamaLLM(
         # model="gemma4:e2b",
         # model="gemma4:e2b-it-q4_K_M",
         model="qwen2.5:1.5b",
+        base_url="http://host.docker.internal:11434",
         num_ctx=2048,
         num_thread=8,
     )
@@ -32,9 +32,9 @@ def fill_cv_data(profile_id):
         }
     }
 
-    for section in SECTIONS.keys():
-        schema = SECTIONS[section["schema"]]
-        rag_prompt = SECTIONS[section["prompt"]]
+    for section in SECTIONS.values():
+        schema = section["schema"]
+        rag_prompt = section["prompt"]
 
         rag_response = retriever(rag_prompt, profile_id=profile_id, max_results=4)
 
@@ -53,7 +53,7 @@ def fill_cv_data(profile_id):
                 model_response = model.invoke(model_prompt)
                 new_section = schema.model_validate_json(model_response)
                 new_resume[section] = new_section
-            except ValidationError as e :
+            except ValidationError as e:
                 model_prompt += error_prompt + f"[e], \n"
                 attempts += 1
         if attempts > max_attempts:
