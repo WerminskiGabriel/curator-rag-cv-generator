@@ -1,7 +1,7 @@
 from langchain_core.documents import Document
 from pgvector.django import CosineDistance
-from ..models import CVAnalysis
-from .get_embedding_function import get_embedding_function
+from cv_engine.models import CVAnalysis
+from cv_engine.services.get_embedding_function import get_embedding_function
 
 
 def retriever(query, profile_id, max_results=5):

@@ -1,6 +1,6 @@
-from ..models import CVAnalysis
-from .chunker import chunker
-from .get_embedding_function import get_embedding_function
+from cv_engine.models import CVAnalysis
+from cv_engine.services.chunker import chunker
+from cv_engine.services.get_embedding_function import get_embedding_function
 
 
 def process_document_to_db(document_instance):

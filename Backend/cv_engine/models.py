@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from ..api.models import Documents
-from pgvector import VectorField
+from api.models import Documents
+from pgvector.django import VectorField
 
 
 class CVAnalysis(models.Model):

@@ -1,0 +1,36 @@
+from cv_engine.models import GeneratedResume
+from pathlib import Path
+from django.conf import settings
+import typst
+from django.shortcuts import get_object_or_404
+import tempfile
+import os
+import json
+from django.core.files import File
+
+
+# TODO temporary json files
+def generate_save_cv(generatedResume_id, template_typst="resume.typ"):
+    resume_instance = get_object_or_404(GeneratedResume, id=generatedResume_id)
+
+    typst_path = Path(settings.TYPST_ROOT) / template_typst
+    json_path = Path(settings.MEDIA_ROOT) / 'json_templates' / f"{str(generatedResume_id)}.json"
+    output_path = Path(settings.MEDIA_ROOT) / 'resumes/' / f"{str(generatedResume_id)}.pdf"
+
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.NamedTemporaryFile(mode='w', encoding="utf8", delete=True, prefix="info", suffix=".json",
+                                     dir=settings.TYPST_ROOT) as json_file:
+        # with open(json_path, 'w', encoding="utf8") as json_file:
+        json.dump(resume_instance.generatedJson, json_file, ensure_ascii=False, indent=4)
+        json_file.flush()  # local save
+        try:
+            typst.compile(typst_path, output=output_path)
+            with open(output_path, 'rb') as file:
+                resume_name = f"{generatedResume_id}.pdf"
+                resume_instance.pdf_file.save(resume_name, File(file), save=True)
+            return resume_instance.pdf_file.url
+        except Exception as e:
+            print(f"Typst compilation error: {e}")
+            return None

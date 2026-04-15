@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'frontend',
+    'cv_engine',
 ]
 
 REST_FRAMEWORK = {

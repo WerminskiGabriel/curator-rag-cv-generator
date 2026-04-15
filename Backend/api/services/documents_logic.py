@@ -1,7 +1,7 @@
 from .. import models
 from .parser import parser_path
 from ..models import Documents
-from ...cv_engine.services.embedder import process_document_to_db
+from cv_engine.services.embedder import process_document_to_db
 
 
 # ----------[ GETTERS ]----------
