@@ -14,6 +14,10 @@ from cv_engine.models import GeneratedResume
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def generate_cv(request, generatedResume_id):
+    """
+    from GeneratedResume.generatedResume_id creates pdf using existing resume_dict in typst
+    :returns pdf_file_path, status_201_CREATED
+    """
     typst_file_path = generate_save_cv(generatedResume_id)
 
     resume_instance = GeneratedResume.objects.get(id=generatedResume_id, user=request.user)

@@ -2,40 +2,38 @@ from cv_engine.services.templateJsonDesc import Personal, Skills, Education, Pro
 
 SECTIONS = {
     "personal": {
-        "schema": Personal.model_json_schema(),
+        "schema": Personal,
         "prompt": (
-            "Extract the user's identity and contact information. "
-            "Ensure 'telephone_link' follows the 'tel:+48...' format and "
-            "all URLs are absolute."
+            "Contact information, full name, phone number, email address, "
+            "LinkedIn profile URL, GitHub repository links, and professional bio summary."
         )
     },
     "skills": {
-        "schema": Skills.model_json_schema(),
+        "schema": Skills,
         "prompt": (
-            "Group the candidate's skills into logical categories (e.g., Languages, Programming, Tools). "
-            "The 'items' field should be a comma-separated string of skills for that category."
+            "Technical stack, programming languages like Python or Java, "
+            "software technologies, frameworks, tools, and professional competencies."
         )
     },
     "education": {
-        "schema": Education.model_json_schema(),
+        "schema": Education,
         "prompt": (
-            "Extract the educational background. For 'highlights', focus on degree-specific "
-            "achievements, high GPAs, or relevant certifications mentioned in the text."
+            "Academic history, university degrees, higher education, "
+            "graduation dates, GPA, honors, and relevant university courses."
         )
     },
     "experience": {
-        "schema": Experience.model_json_schema(),
+        "schema": Experience,
         "prompt": (
-            "Extract professional experience. Rewrite the 'highlights' into action-oriented "
-            "bullet points starting with strong verbs (e.g., 'Developed', 'Managed', 'Optimized')."
+            "Professional work history, job titles, companies, employment dates, "
+            "work responsibilities, professional achievements, and career path."
         )
     },
     "projects": {
-        "schema": Projects.model_json_schema(),
+        "schema": Projects,
         "prompt": (
-            "Extract technical projects. In the 'tech' field, list the stack used "
-            "(e.g., 'Python / Django / Docker'). In 'highlights', focus on the "
-            "technical challenges solved."
+            "Technical projects, coding portfolio, applications built, "
+            "project descriptions, and technologies used in development."
         )
     },
 }

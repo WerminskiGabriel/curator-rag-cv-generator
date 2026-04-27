@@ -15,9 +15,12 @@ ENV PYTHONUNBUFFERED=1
 RUN pip install --upgrade pip
 
 # Copy the requirements file first (better caching)
+
 COPY Backend/requirements.txt ./
 
+
 # Install Python dependencies
+RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Production stage
@@ -52,4 +55,4 @@ USER appuser
 EXPOSE 8000
 
 # Start the application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--chdir", "/app/Backend", "Backend.wsgi:application"]
+CMD ["gunicorn", "--timeout", "120","--bind", "0.0.0.0:8000", "--chdir", "/app/Backend", "Backend.wsgi:application"]
