@@ -55,4 +55,4 @@ USER appuser
 EXPOSE 8000
 
 # Start the application using Gunicorn
-CMD ["gunicorn", "--timeout", "120","--bind", "0.0.0.0:8000", "--chdir", "/app/Backend", "Backend.wsgi:application"]
+CMD ["gunicorn", "--timeout", "500","--bind", "0.0.0.0:8000", "--chdir", "/app/Backend", "Backend.wsgi:application"]

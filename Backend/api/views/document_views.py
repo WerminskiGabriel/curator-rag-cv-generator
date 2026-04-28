@@ -90,7 +90,7 @@ def get_profile_document_objects(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_document(request, document_id):
-    doc = get_object_or_404(models.Documents, id=document_id, profile=request.user.profile)
+def delete_document(request, documents_id):
+    doc = get_object_or_404(models.Documents, id=documents_id, profile=request.user.profile)
     doc.delete()
     return Response(status=status.HTTP_400_BAD_REQUEST)
