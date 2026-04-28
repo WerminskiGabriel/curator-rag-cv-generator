@@ -18,6 +18,7 @@ def generate_cv_data_llm(profile_id):
         num_thread=8,
         temperature=0,
         format="json",
+        keep_alive="2m",
     )
 
     new_resume = {
@@ -49,7 +50,6 @@ def generate_cv_data_llm(profile_id):
                     IMPORTANT: Return ONLY raw JSON. No conversational text.
                     IMPORTANT INSTRUCTION: You MUST wrap the values inside an object with the exact key in JSON SCHEMA to match it.
                     """
-
         attempts = 1
         max_attempts = 3
         error_prompt = "Fix this error in your previous response:"
@@ -58,7 +58,8 @@ def generate_cv_data_llm(profile_id):
             try:
                 model_response = model.invoke(model_prompt)
                 print(
-                    f"section: {section_name},attempts:{attempts}. Last error: {str(last_error)}, model_response:{model_response}")
+                    f"\nsection: {section_name},attempts:{attempts}. Last error: {str(last_error)}, model_response:{model_response}\n")
+
                 new_section = schema.model_validate_json(model_response)
                 new_resume[section_name] = new_section.model_dump()
                 break
@@ -69,4 +70,6 @@ def generate_cv_data_llm(profile_id):
         if attempts > max_attempts:
             raise Exception(f"Max attempts reached for {section_name}. Last error: {str(last_error)}")
 
+    for item, value in new_resume.items():
+        print(item, value)
     return new_resume

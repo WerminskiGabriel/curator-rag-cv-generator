@@ -23,7 +23,7 @@ def generate_and_fill_cv_to_model(request, profile_id):
         # TODO change user to job model
         doc = GeneratedResume.objects.create(user=request.user, generatedJson=new_resume_base)
 
-        return Response({"resume": doc.generatedJson}, status=status.HTTP_201_CREATED)
+        return Response( {doc.generatedJson}, status=status.HTTP_201_CREATED)
     except Exception as e:
         import traceback
         print(traceback.format_exc())

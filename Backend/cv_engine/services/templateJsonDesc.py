@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field
 
 class PersonalInfo(BaseModel):
     telephone_label: str = Field(description="Formatted phone number for display, e.g., '+48 123 456 789'")
-    telephone_link: str = Field(description="Technical tel: link for links, e.g., 'tel:+48123456789'")
+    telephone_link: str = Field(
+        description="Formated phone number for links, has to have tel: prefix and no spaces, e.g., 'tel:+48123456789'")
     email: str = Field(description="Professional contact email address")
     github_label: str = Field(description="GitHub profile label, e.g., 'github.com/username'")
     github_link: str = Field(description="Full URL to the GitHub profile, e.g., 'https://github.com/johndoe'")
@@ -26,8 +27,8 @@ class Personal(BaseModel):
 
 class SkillEntry(BaseModel):
     category: str = Field(description="Skill category name, e.g., 'Languages,'Programming','Technologies',")
-    items: str = Field(
-        description="Comma-separated list of specific skills, e.g., Languages->'English (C1),Polish(Native)', Programming -> 'Python, Java, C, C++, SQL', Technologies -> 'Django, Docker,Git, Linux, LaTeX' ")
+    items: list[str] = Field(
+        description="Comma-separated list of specific skills, e.g., Languages->'English (C1),Polish(Native)', Programming -> [Python, Java, C, C++, SQL], Technologies -> 'Django, Docker,Git, Linux, LaTeX' ")
 
 
 class Skills(BaseModel):
