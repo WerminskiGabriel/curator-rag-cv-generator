@@ -5,6 +5,10 @@ from cv_engine.services.get_embedding_function import get_embedding_function
 
 
 def retriever(query, profile_id, max_results=5):
+    """
+    :params query, profile_id, max_results=5
+    :returns list of max_results chunks
+    """
     embeddings_function = get_embedding_function()
     query_embedding = embeddings_function.embed_query(query)
     retrieved_chunks = CVAnalysis.objects.filter(document__profile_id=profile_id).annotate(

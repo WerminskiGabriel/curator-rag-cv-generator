@@ -8,11 +8,15 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
-# middleware.autologinMiddleware logged user
-# receiver in models made sure model for that user is created
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def import_file(request):
+    """
+    Creates document Model for Profile model,
+    Uses @receiver in signals.py to automatically parse files to string and save it to Documents model,
+    sets processed to True
+    :returns ducument_model_json, status_201_CREATED
+    """
     uploadedFile = request.FILES.get('file')
 
     if not uploadedFile:
@@ -86,7 +90,7 @@ def get_profile_document_objects(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_document(request, document_id):
-    doc = get_object_or_404(models.Documents, id=document_id, profile=request.user.profile)
+def delete_document(request, documents_id):
+    doc = get_object_or_404(models.Documents, id=documents_id, profile=request.user.profile)
     doc.delete()
     return Response(status=status.HTTP_400_BAD_REQUEST)

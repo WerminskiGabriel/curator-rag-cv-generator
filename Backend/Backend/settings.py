@@ -158,9 +158,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 TYPST_ROOT = BASE_DIR / 'cv_engine' / 'templates_cv'
 
-
-
-
 # Supabase REST API configuration.
 # SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 # SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '')

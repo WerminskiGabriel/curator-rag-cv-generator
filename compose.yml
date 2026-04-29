@@ -53,6 +53,17 @@ services:
     environment:
       - OLLAMA_NUM_PARALLEL=1
       - OLLAMA_MAX_LOADED_MODELS=1
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        ollama serve &
+        until ollama list 2>&1; do
+          echo "Waiting for ollama server start..."
+          sleep 2
+        done
+        echo "Pulling qwen2.5:1.5b..."
+        ollama pull qwen2.5:1.5b
+        wait
 volumes:
   postgres_data:
   ollama_data:

@@ -1,41 +1,59 @@
-from cv_engine.services.templateJsonDesc import Personal, Skills, Education, Projects, Experience, Layout
+from cv_engine.services.templateJsonDesc import Personal, SkillsList, ExperienceList, EducationList, ProjectList
 
 SECTIONS = {
     "personal": {
-        "schema": Personal.model_json_schema(),
-        "prompt": (
-            "Extract the user's identity and contact information. "
-            "Ensure 'telephone_link' follows the 'tel:+48...' format and "
-            "all URLs are absolute."
+        "schema": Personal,
+        "rag_prompt": (
+            "Contact information, full name, phone number, email address, "
+            "LinkedIn profile URL, GitHub repository links, and professional bio summary."
+            "Place 'description' INSIDE the 'info' object, NOT at root level"
+            "Extract LinkedIn profile URL from the document and format it properly:"
+            "Never include extra fields like 'skills' - that's a separate section"
+        ),
+        "model_prompt": (
+            "DO NOT FORGET ABOUT LinkedIn link and label\n"
+            "DO NOT PLACE DESCRIPTION FIELD OUTSIDE INFO, IT SHOULD BE IN IT\n",
+            "DO NOT FORGET ABOUT description: str field"
         )
     },
     "skills": {
-        "schema": Skills.model_json_schema(),
-        "prompt": (
-            "Group the candidate's skills into logical categories (e.g., Languages, Programming, Tools). "
-            "The 'items' field should be a comma-separated string of skills for that category."
+        "schema": SkillsList,
+        "rag_prompt": (
+            "Technical stack, programming languages like Python or Java, "
+            "software technologies, frameworks, tools, and professional competencies."
+        ),
+        "model_prompt": (
+            ""
         )
     },
     "education": {
-        "schema": Education.model_json_schema(),
-        "prompt": (
-            "Extract the educational background. For 'highlights', focus on degree-specific "
-            "achievements, high GPAs, or relevant certifications mentioned in the text."
+        "schema": EducationList,
+        "rag_prompt": (
+            "Academic history, university degrees, higher education, "
+            "graduation dates, GPA, honors, and relevant university courses."
+        ),
+        "model_prompt": (
+            ""
         )
     },
     "experience": {
-        "schema": Experience.model_json_schema(),
-        "prompt": (
-            "Extract professional experience. Rewrite the 'highlights' into action-oriented "
-            "bullet points starting with strong verbs (e.g., 'Developed', 'Managed', 'Optimized')."
+        "schema": ExperienceList,
+        "rag_prompt": (
+            "Professional work history, job titles, companies, employment dates, "
+            "work responsibilities, professional achievements, and career path."
+        ),
+        "model_prompt": (
+            ""
         )
     },
     "projects": {
-        "schema": Projects.model_json_schema(),
-        "prompt": (
-            "Extract technical projects. In the 'tech' field, list the stack used "
-            "(e.g., 'Python / Django / Docker'). In 'highlights', focus on the "
-            "technical challenges solved."
+        "schema": ProjectList,
+        "rag_prompt": (
+            "Technical projects, coding portfolio, applications built, "
+            "project descriptions, and technologies used in development."
+        ),
+        "model_prompt": (
+            ""
         )
     },
 }
