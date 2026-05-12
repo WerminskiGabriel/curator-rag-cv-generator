@@ -1,14 +1,14 @@
 from django.contrib import admin
-from .models import Offer
-
 from . import models
+from .models import JobOffer
 
-@admin.register(Offer)
-class OfferAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'salary', 'remote', 'created_at')
-    list_filter = ('remote', 'created_at')
-    search_fields = ('title', 'description')
 
+@admin.register(JobOffer)
+class JobOfferAdmin(admin.ModelAdmin):
+    list_display = ('slug', 'title', 'scraped_at')
+    search_fields = ('slug', 'title')
+    list_filter = ('scraped_at',)
+    readonly_fields = ('scraped_at',)
 
 admin.site.register(models.Profile)
 admin.site.register(models.Documents)

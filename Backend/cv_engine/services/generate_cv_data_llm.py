@@ -5,13 +5,16 @@ from langchain_ollama import OllamaLLM
 from cv_engine.services.sections import SECTIONS
 
 
-def generate_cv_data_llm(profile_id):
+def generate_cv_data_llm(profile_id, offer: dict = None):
     """
-    generates not personalized dict(resume) for profile using rag and ollama model
+    Generates a personalized resume dict for a given profile using RAG + Ollama LLM.
+
+    Args:
+        profile_id: ID of the user profile to retrieve CV chunks from.
+        offer: Optional dict with job offer data (title, body, required_skills).
+               If provided, RAG queries and LLM prompts are tailored to the offer.
     """
     model = OllamaLLM(
-        # model="gemma4:e2b",
-        # model="gemma4:e2b-it-q4_K_M",
         model="qwen2.5:1.5b",
         base_url="http://ollama:11434",
         num_ctx=2048,
@@ -20,6 +23,30 @@ def generate_cv_data_llm(profile_id):
         format="json",
         keep_alive="2m",
     )
+
+    # Kontekst oferty dla RAG i LLM
+    offer_title = offer.get('title', '') if offer else ''
+    offer_body = (offer.get('body') or offer.get('description', ''))[:800] if offer else ''
+    required_skills = offer.get('required_skills', []) if offer else []
+    if isinstance(required_skills, list):
+        skills_str = ', '.join(
+            s.get('name', str(s)) if isinstance(s, dict) else str(s)
+            for s in required_skills
+        )
+    else:
+        skills_str = str(required_skills)
+
+    offer_context = ""
+    if offer:
+        offer_context = (
+            f"\n\nTARGET JOB OFFER:\n"
+            f"Title: {offer_title}\n"
+            f"Required skills: {skills_str}\n"
+            f"Job description: {offer_body}\n"
+            f"IMPORTANT: Tailor the CV specifically for this job offer. "
+            f"Highlight skills and experiences most relevant to '{offer_title}'. "
+            f"Emphasize: {skills_str}."
+        )
 
     new_resume = {
         "layout": {
@@ -40,21 +67,29 @@ def generate_cv_data_llm(profile_id):
 
     for section_name, section_value in SECTIONS.items():
         schema = section_value["schema"]
-        rag_prompt = section_value["rag_prompt"]
-        model_prompt = section_value["model_prompt"]
-        rag_response = retriever(rag_prompt, profile_id=profile_id, max_results=4)
+        base_rag_prompt = section_value["rag_prompt"]
+        section_model_prompt = section_value["model_prompt"]
+
+        # Wzbogać zapytanie RAG o kontekst oferty — pobierze trafniejsze chunki
+        if offer and section_name in ("skills", "experience", "projects"):
+            rag_query = f"{base_rag_prompt} Relevant to: {offer_title}. Skills: {skills_str}."
+        else:
+            rag_query = base_rag_prompt
+
+        rag_response = retriever(rag_query, profile_id=profile_id, max_results=4)
 
         model_prompt = f"""
-                    TASK: Extract information from the provided text into JSON format.\n
-                    TEXT: {rag_response}\n
-                    JSON SCHEMA: {schema.model_json_schema()}\n
-                    IMPORTANT: 
-                        {model_prompt}
-                        Return ONLY raw JSON, You MUST wrap the values inside {{ }} .\n
-                        1. Return ONLY raw JSON, no markdown, no explanation
-                        3. Do NOT return empty strings for required fields
-                        4. Follow the exact JSON structure matching the schema
-                    """
+TASK: Extract information from the provided text into JSON format.
+TEXT: {rag_response}
+JSON SCHEMA: {schema.model_json_schema()}
+{offer_context}
+IMPORTANT:
+    {section_model_prompt}
+    Return ONLY raw JSON, You MUST wrap the values inside {{ }} .
+    1. Return ONLY raw JSON, no markdown, no explanation
+    3. Do NOT return empty strings for required fields
+    4. Follow the exact JSON structure matching the schema
+    """
 
         attempts = 1
         max_attempts = 5
@@ -72,25 +107,27 @@ def generate_cv_data_llm(profile_id):
                     error_details += f" -field: {field} | error: {msg} | type: {typ}\n"
 
                 current_prompt = f"""
-                            {model_prompt}\n
-                            Your last response contained error\n
-                            LAST_RESPONSE :\n{last_response}\n
-                            LAST_RESPONSE_ERRORS :\n{error_details}\n
-                            TASK: FIX ERRORS. Keep Last_RESPONSE fields that were right and change only ones with errors.\n
-                            """
+{model_prompt}
+Your last response contained error
+LAST_RESPONSE :\n{last_response}
+LAST_RESPONSE_ERRORS :\n{error_details}
+TASK: FIX ERRORS. Keep Last_RESPONSE fields that were right and change only ones with errors.
+"""
             try:
                 model_response = model.invoke(current_prompt)
                 last_response = model_response
                 print(
-                    f"\n{"-" * 20}\nprompt:\n{current_prompt}\nsection:\n {section_name}\nattempts:\n{attempts}\n Last error: \n{str(last_error)}\n model_response:\n{model_response}\n{"-" * 20}\n")
+                    f"\n{'-' * 20}\nsection: {section_name}\nattempts: {attempts}\n"
+                    f"Last error: {str(last_error)}\nmodel_response:\n{model_response}\n{'-' * 20}\n"
+                )
 
                 new_section = schema.model_validate_json(model_response)
-
                 new_resume[section_name] = new_section.model_dump()
                 break
             except ValidationError as e:
                 last_error = e
                 attempts += 1
+
         if attempts > max_attempts:
             raise Exception(f"Max attempts reached for {section_name}. Last error: {str(last_error)}")
 

@@ -1,19 +1,15 @@
 from django.urls import path
-from .views import offer_views, resume_views, supabase_views, document_views, authorization
+from .views import offer_views, resume_views, document_views, authorization
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('register/', authorization.register, name='register'),
     path('profile/', authorization.UserProfileView.as_view(), name='user_profile'),
 
-    path('offers/match/', offer_views.match),
-    path('offers/scan-save/', offer_views.scan_and_save_offers),
-
-    path('supabase/select/', supabase_views.supabase_select),
-    path('supabase/insert/', supabase_views.supabase_insert),
-    path('supabase/update/', supabase_views.supabase_update),
-    path('supabase/delete/', supabase_views.supabase_delete),
+    path('offers/get-offers/', offer_views.get_offers_from_db),
+    path('offers/scrape/', offer_views.scrape_offers),
 
     path('resume/generate-cv/', resume_views.auto_generate_cv),
 

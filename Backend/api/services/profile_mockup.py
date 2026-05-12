@@ -5,21 +5,26 @@ MY_PROFILE = {
     "phone": "+48 123 456 789",
     "address": "Kraków, Poland",
     "title": "Junior Python Developer",
-    "summary": "Aspiring CS major",
-    "skills": ["Python", "Java", "Git", "SQL", "Linux", "Typst"],
+    "summary": "Aspiring CS student with a passion for backend development and NLP.",
+    "github_label": "github.com/jankowalski",
+    "github_link": "https://github.com/jankowalski",
+    "linkedin_label": "linkedin.com/in/jankowalski",
+    "linkedin_link": "https://www.linkedin.com/in/jankowalski",
+    "skills": ["Python", "Java", "Git", "SQL", "Linux", "Docker", "Django"],
     "education": [
         {
-            "degree": "Computer Science Endgineer",
-            "institution": "AGH",
-            "years": "2024 - 2028"
+            "degree": "Computer Science Engineer",
+            "institution": "AGH University of Science and Technology",
+            "years": "2024 – Present",
+            "description": "Focus on algorithms, NLP and software engineering."
         }
     ],
     "experience": [
         {
-            "role": "Academic project dev",
-            "company": "Academic Projects",
-            "years": "2022 - 2024",
-            "description": "Apps"
+            "role": "Academic Project Developer",
+            "company": "AGH Academic Projects",
+            "years": "2024 – Present",
+            "description": "Built NLP pipeline for CV generation and job matching."
         }
     ]
 }

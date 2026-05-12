@@ -2,25 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 import uuid
 
-
-
-class Offer(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    remote = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"Profile:{self.user}"
-
 
 class Documents(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
@@ -31,3 +17,16 @@ class Documents(models.Model):
 
     def __str__(self):
         return f"{self.profile} | {self.uploadDate}"
+
+class JobOffer(models.Model):
+    slug = models.CharField(max_length=255, unique=True, primary_key=True)
+    title = models.CharField(max_length=255)
+    body = models.TextField(blank=True, default='')
+    required_skills = models.JSONField(default=list)
+    scraped_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'job_offers'
+
+    def __str__(self):
+        return f"{self.title} ({self.slug})"
