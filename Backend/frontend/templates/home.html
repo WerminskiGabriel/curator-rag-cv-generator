@@ -85,6 +85,14 @@
         .cta-gradient {
           background: linear-gradient(135deg, #2E3192 0%, #15157d 100%);
         }
+        #auth-modal { display: none; }
+        #auth-modal.open { display: flex; }
+        .upload-locked { display: none; }
+        .upload-unlocked { display: none; }
+        body.logged-in .upload-locked { display: none; }
+        body.logged-in .upload-unlocked { display: flex; }
+        body:not(.logged-in) .upload-locked { display: flex; }
+        body:not(.logged-in) .upload-unlocked { display: none; }
     </style>
 </head>
 <body class="text-on-surface min-h-screen pb-32 overflow-x-hidden">
@@ -107,6 +115,26 @@
                 <a class="text-[#464652] dark:text-slate-400 hover:bg-[#e4e1ea] transition-colors px-3 py-1 rounded-lg"
                    href="#">Offers</a>
             </nav>
+            <!-- Auth buttons -->
+            <div id="auth-buttons" class="flex items-center gap-2">
+                <button id="btn-show-login"
+                        onclick="openAuthModal('login')"
+                        class="px-4 py-2 rounded-lg text-sm font-bold text-primary hover:bg-surface-container-high transition-colors">
+                    Log in
+                </button>
+                <button id="btn-show-register"
+                        onclick="openAuthModal('register')"
+                        class="px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary hover:opacity-90 transition-all">
+                    Register
+                </button>
+            </div>
+            <div id="user-info" class="hidden items-center gap-3">
+                <span id="username-label" class="text-sm font-bold text-primary"></span>
+                <button onclick="logout()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">
+                    Log out
+                </button>
+            </div>
             <button class="p-2 rounded-full hover:bg-[#e4e1ea] transition-all active:opacity-80 active:scale-95">
                 <span class="material-symbols-outlined text-[#2E3192]">search</span>
             </button>
@@ -146,15 +174,42 @@
                 <h2 class="text-3xl font-bold text-on-surface mb-4">Upload your CV or Portfolio</h2>
                 <p class="text-on-surface-variant max-w-md leading-relaxed">
                     Our AI engine will curate your profile by analyzing your achievements and technical depth. Supports
-                    PDF, DOCX, and Figma links.
+                    PDF, DOCX, and images.
                 </p>
             </div>
-            <div class="relative z-10 mt-12 border-2 border-dashed border-outline-variant/30 rounded-lg p-12 flex flex-col items-center justify-center hover:bg-surface-container transition-colors cursor-pointer group">
-                <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <span class="material-symbols-outlined text-primary text-3xl">add</span>
+
+            <!-- Locked state: not logged in -->
+            <div class="upload-locked relative z-10 mt-12 border-2 border-dashed border-outline-variant/30 rounded-lg p-12 flex-col items-center justify-center text-center">
+                <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 mx-auto">
+                    <span class="material-symbols-outlined text-outline text-3xl">lock</span>
                 </div>
-                <span class="font-bold text-primary">Drop files here</span>
-                <span class="text-sm text-on-surface-variant mt-1">or browse files</span>
+                <span class="font-bold text-on-surface-variant">Log in to upload your CV</span>
+                <span class="text-sm text-outline mt-1 block">Create an account or sign in to get started</span>
+                <button onclick="openAuthModal('login')"
+                        class="mt-6 px-6 py-2.5 bg-primary text-on-primary rounded-lg font-bold text-sm hover:opacity-90 transition-all">
+                    Sign in
+                </button>
+            </div>
+
+            <!-- Unlocked state: logged in -->
+            <div class="upload-unlocked relative z-10 mt-12 flex-col w-full gap-4">
+                <label id="drop-zone"
+                       for="cv-file-input"
+                       class="border-2 border-dashed border-primary/30 rounded-lg p-10 flex flex-col items-center justify-center hover:bg-surface-container transition-colors cursor-pointer group">
+                    <div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-primary text-3xl">add</span>
+                    </div>
+                    <span class="font-bold text-primary" id="drop-label">Drop files here</span>
+                    <span class="text-sm text-on-surface-variant mt-1">PDF, DOCX, PNG, JPG &mdash; or click to browse</span>
+                    <input id="cv-file-input" type="file" accept=".pdf,.docx,.png,.jpg,.jpeg" class="hidden" onchange="handleFileSelect(event)">
+                </label>
+                <div id="upload-status" class="hidden mt-3 p-4 rounded-lg text-sm font-medium"></div>
+                <button id="upload-btn"
+                        onclick="uploadCV()"
+                        class="hidden mt-2 w-full bg-primary text-on-primary py-3 rounded-lg font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                    Upload to my profile
+                </button>
             </div>
         </div>
         <!-- Links & Identity Section -->
@@ -429,5 +484,239 @@
         </a>
     </div>
 </nav>
+
+<!-- Auth Modal -->
+<div id="auth-modal"
+     class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm items-center justify-center p-4"
+     onclick="closeAuthModalOnOverlay(event)">
+    <div class="bg-surface-container-lowest rounded-card shadow-2xl w-full max-w-md p-8 relative">
+        <button onclick="closeAuthModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-error/10 transition-colors">
+            <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-8 bg-surface-container p-1 rounded-lg">
+            <button id="tab-login" onclick="switchTab('login')"
+                    class="flex-1 py-2 rounded-md text-sm font-bold transition-all bg-surface-container-lowest text-primary shadow-sm">
+                Log in
+            </button>
+            <button id="tab-register" onclick="switchTab('register')"
+                    class="flex-1 py-2 rounded-md text-sm font-bold transition-all text-on-surface-variant">
+                Register
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="form-login">
+            <h2 class="text-2xl font-bold mb-6">Welcome back</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Username</label>
+                    <input id="login-username" type="text" placeholder="your_username"
+                           class="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium"/>
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Password</label>
+                    <input id="login-password" type="password" placeholder="••••••••"
+                           class="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium"/>
+                </div>
+                <div id="login-error" class="hidden text-error text-sm font-medium p-3 bg-error-container rounded-lg"></div>
+                <button onclick="submitLogin()"
+                        class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold hover:opacity-90 transition-all mt-2">
+                    Log in
+                </button>
+                <p class="text-center text-sm text-on-surface-variant">No account yet?
+                    <button onclick="switchTab('register')" class="text-primary font-bold hover:underline">Register</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="form-register" class="hidden">
+            <h2 class="text-2xl font-bold mb-6">Create account</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Username</label>
+                    <input id="reg-username" type="text" placeholder="your_username"
+                           class="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium"/>
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Email (optional)</label>
+                    <input id="reg-email" type="email" placeholder="you@example.com"
+                           class="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium"/>
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Password</label>
+                    <input id="reg-password" type="password" placeholder="min. 8 characters"
+                           class="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium"/>
+                </div>
+                <div id="reg-error" class="hidden text-error text-sm font-medium p-3 bg-error-container rounded-lg"></div>
+                <button onclick="submitRegister()"
+                        class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold hover:opacity-90 transition-all mt-2">
+                    Create account
+                </button>
+                <p class="text-center text-sm text-on-surface-variant">Already have an account?
+                    <button onclick="switchTab('login')" class="text-primary font-bold hover:underline">Log in</button>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── State ──────────────────────────────────────────────
+    let selectedFile = null;
+
+    // ── Init ───────────────────────────────────────────────
+    (function init() {
+        const token = localStorage.getItem('access_token');
+        const username = localStorage.getItem('username');
+        if (token && username) setLoggedIn(username);
+    })();
+
+    // ── Auth state helpers ─────────────────────────────────
+    function setLoggedIn(username) {
+        document.body.classList.add('logged-in');
+        document.getElementById('auth-buttons').classList.add('hidden');
+        document.getElementById('user-info').classList.remove('hidden');
+        document.getElementById('user-info').classList.add('flex');
+        document.getElementById('username-label').textContent = username;
+    }
+
+    function logout() {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('username');
+        document.body.classList.remove('logged-in');
+        document.getElementById('auth-buttons').classList.remove('hidden');
+        document.getElementById('user-info').classList.add('hidden');
+        document.getElementById('user-info').classList.remove('flex');
+        selectedFile = null;
+    }
+
+    // ── Modal helpers ──────────────────────────────────────
+    function openAuthModal(tab) {
+        document.getElementById('auth-modal').classList.add('open');
+        switchTab(tab || 'login');
+    }
+
+    function closeAuthModal() {
+        document.getElementById('auth-modal').classList.remove('open');
+    }
+
+    function closeAuthModalOnOverlay(e) {
+        if (e.target === document.getElementById('auth-modal')) closeAuthModal();
+    }
+
+    function switchTab(tab) {
+        const isLogin = tab === 'login';
+        document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+        document.getElementById('form-register').classList.toggle('hidden', isLogin);
+        document.getElementById('tab-login').className = isLogin
+            ? 'flex-1 py-2 rounded-md text-sm font-bold transition-all bg-surface-container-lowest text-primary shadow-sm'
+            : 'flex-1 py-2 rounded-md text-sm font-bold transition-all text-on-surface-variant';
+        document.getElementById('tab-register').className = !isLogin
+            ? 'flex-1 py-2 rounded-md text-sm font-bold transition-all bg-surface-container-lowest text-primary shadow-sm'
+            : 'flex-1 py-2 rounded-md text-sm font-bold transition-all text-on-surface-variant';
+    }
+
+    // ── Login ──────────────────────────────────────────────
+    async function submitLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+        const errEl = document.getElementById('login-error');
+        errEl.classList.add('hidden');
+
+        try {
+            const res = await fetch('/api/token/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Invalid credentials');
+
+            localStorage.setItem('access_token', data.access);
+            localStorage.setItem('refresh_token', data.refresh);
+            localStorage.setItem('username', username);
+            setLoggedIn(username);
+            closeAuthModal();
+        } catch (e) {
+            errEl.textContent = e.message;
+            errEl.classList.remove('hidden');
+        }
+    }
+
+    // ── Register ───────────────────────────────────────────
+    async function submitRegister() {
+        const username = document.getElementById('reg-username').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const errEl = document.getElementById('reg-error');
+        errEl.classList.add('hidden');
+
+        try {
+            const res = await fetch('/api/register/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, email, password})
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+            localStorage.setItem('access_token', data.access);
+            localStorage.setItem('refresh_token', data.refresh);
+            localStorage.setItem('username', data.username);
+            setLoggedIn(data.username);
+            closeAuthModal();
+        } catch (e) {
+            errEl.textContent = e.message;
+            errEl.classList.remove('hidden');
+        }
+    }
+
+    // ── File upload ────────────────────────────────────────
+    function handleFileSelect(event) {
+        selectedFile = event.target.files[0];
+        if (selectedFile) {
+            document.getElementById('drop-label').textContent = selectedFile.name;
+            document.getElementById('upload-btn').classList.remove('hidden');
+        }
+    }
+
+    async function uploadCV() {
+        if (!selectedFile) return;
+        const token = localStorage.getItem('access_token');
+        if (!token) { openAuthModal('login'); return; }
+
+        const statusEl = document.getElementById('upload-status');
+        statusEl.className = 'mt-3 p-4 rounded-lg text-sm font-medium bg-surface-container text-on-surface-variant';
+        statusEl.textContent = 'Uploading...';
+        statusEl.classList.remove('hidden');
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        try {
+            const res = await fetch('/api/documents/import-file/', {
+                method: 'POST',
+                headers: {'Authorization': 'Bearer ' + token},
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || data.error || 'Upload failed');
+
+            statusEl.className = 'mt-3 p-4 rounded-lg text-sm font-medium bg-secondary-container text-on-secondary-container';
+            statusEl.textContent = 'CV uploaded successfully! Our AI is now processing your profile.';
+            document.getElementById('upload-btn').classList.add('hidden');
+            document.getElementById('drop-label').textContent = 'Drop files here';
+            selectedFile = null;
+            document.getElementById('cv-file-input').value = '';
+        } catch (e) {
+            statusEl.className = 'mt-3 p-4 rounded-lg text-sm font-medium bg-error-container text-error';
+            statusEl.textContent = 'Error: ' + e.message;
+        }
+    }
+</script>
 </body>
 </html>

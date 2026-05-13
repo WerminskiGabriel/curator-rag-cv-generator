@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import offer_views, resume_views, document_views, authorization
+from .views import offer_views, document_views, authorization
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -10,8 +10,6 @@ urlpatterns = [
 
     path('offers/get-offers/', offer_views.get_offers_from_db),
     path('offers/scrape/', offer_views.scrape_offers),
-
-    path('resume/generate-cv/', resume_views.auto_generate_cv),
 
     path('documents/import-file/', document_views.import_file),
     path('documents/import-txt/', document_views.import_txt),

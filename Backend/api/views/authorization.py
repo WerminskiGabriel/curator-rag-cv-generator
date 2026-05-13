@@ -8,7 +8,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..models import Profile
 
-
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -18,7 +17,6 @@ class UserProfileView(APIView):
             'username': user.username,
             'email': user.email,
         })
-
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -68,4 +66,4 @@ def register(request):
             'refresh': str(refresh),
         },
         status=status.HTTP_201_CREATED
-    )
+    )
