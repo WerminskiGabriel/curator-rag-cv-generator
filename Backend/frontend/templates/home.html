@@ -93,6 +93,9 @@
         body.logged-in .upload-unlocked { display: flex; }
         body:not(.logged-in) .upload-locked { display: flex; }
         body:not(.logged-in) .upload-unlocked { display: none; }
+        .editable-field:empty:before { content: attr(data-placeholder); color: #c7c5d4; }
+        .editable-field:focus { border-color: #2E3192; }
+        .editable-field { cursor: text; transition: border-color .15s; }
     </style>
 </head>
 <body class="text-on-surface min-h-screen pb-32 overflow-x-hidden">
@@ -108,40 +111,41 @@
         </div>
         <div class="flex items-center gap-6">
             <nav class="hidden md:flex gap-8 items-center">
-                <a class="text-[#2E3192] dark:text-indigo-300 font-bold hover:bg-[#e4e1ea] dark:hover:bg-slate-800 transition-colors px-3 py-1 rounded-lg"
-                   href="#">Home</a>
-                <a class="text-[#464652] dark:text-slate-400 hover:bg-[#e4e1ea] transition-colors px-3 py-1 rounded-lg"
-                   href="#">Profile</a>
-                <a class="text-[#464652] dark:text-slate-400 hover:bg-[#e4e1ea] transition-colors px-3 py-1 rounded-lg"
-                   href="#">Offers</a>
+                <button id="nav-home" onclick="showTab('home')"
+                        class="text-[#2E3192] font-bold bg-[#e4e1ea] px-3 py-1 rounded-lg transition-colors">Home</button>
+                <button id="nav-profile" onclick="showTab('profile')"
+                        class="text-[#464652] hover:bg-[#e4e1ea] px-3 py-1 rounded-lg transition-colors">Profile</button>
             </nav>
-            <!-- Auth buttons -->
             <div id="auth-buttons" class="flex items-center gap-2">
-                <button id="btn-show-login"
-                        onclick="openAuthModal('login')"
+                <button onclick="openAuthModal('login')"
                         class="px-4 py-2 rounded-lg text-sm font-bold text-primary hover:bg-surface-container-high transition-colors">
                     Log in
                 </button>
-                <button id="btn-show-register"
-                        onclick="openAuthModal('register')"
+                <button onclick="openAuthModal('register')"
                         class="px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary hover:opacity-90 transition-all">
                     Register
                 </button>
             </div>
             <div id="user-info" class="hidden items-center gap-3">
+                <div id="completion-badge" class="hidden items-center gap-1.5 px-3 py-1 bg-surface-container rounded-full">
+                    <div class="w-16 h-1.5 bg-outline-variant rounded-full overflow-hidden">
+                        <div id="completion-bar" class="h-full bg-secondary rounded-full transition-all" style="width:0%"></div>
+                    </div>
+                    <span id="completion-pct" class="text-xs font-bold text-secondary">0%</span>
+                </div>
                 <span id="username-label" class="text-sm font-bold text-primary"></span>
                 <button onclick="logout()"
                         class="px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">
                     Log out
                 </button>
             </div>
-            <button class="p-2 rounded-full hover:bg-[#e4e1ea] transition-all active:opacity-80 active:scale-95">
-                <span class="material-symbols-outlined text-[#2E3192]">search</span>
-            </button>
         </div>
     </div>
 </header>
-<main class="max-w-7xl mx-auto px-6 pt-12 space-y-24">
+<main class="max-w-7xl mx-auto px-6 pt-12">
+
+<!-- ═══ TAB: HOME ═══ -->
+<div id="page-home" class="space-y-24">
     <!-- Hero Section / Search Section -->
     <section>
         <div class="max-w-3xl">
@@ -239,14 +243,16 @@
                         <span class="material-symbols-outlined text-sm">auto_awesome</span>
                         Generate Resume
                     </button>
-                    <p class="text-xs text-on-surface-variant text-center">This takes 3–5 minutes — the AI runs locally on CPU.</p>
-                    <!-- Progress steps -->
-                    <div id="gen-progress" class="hidden space-y-2">
-                        <div id="step-analyze" class="flex items-center gap-3 text-sm text-on-surface-variant">
-                            <span id="step-analyze-icon" class="material-symbols-outlined text-base">radio_button_unchecked</span>
-                            Analyzing CV with AI… (takes ~3–4 min)
+                    <!-- Progress bar -->
+                    <div id="gen-progress" class="hidden space-y-3">
+                        <div class="flex justify-between items-center text-sm">
+                            <span id="gen-progress-label" class="text-on-surface-variant font-medium">Starting…</span>
+                            <span id="gen-progress-pct" class="font-black text-primary">0%</span>
                         </div>
-                        <div id="step-render" class="flex items-center gap-3 text-sm text-on-surface-variant">
+                        <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden">
+                            <div id="gen-progress-bar" class="h-full bg-primary rounded-full transition-all duration-500" style="width:0%"></div>
+                        </div>
+                        <div id="step-render" class="hidden flex items-center gap-3 text-sm text-on-surface-variant">
                             <span id="step-render-icon" class="material-symbols-outlined text-base">radio_button_unchecked</span>
                             Rendering PDF…
                         </div>
@@ -270,28 +276,30 @@
                 <div>
                     <h3 class="text-xl font-bold mb-6">Connect Assets</h3>
                     <div class="space-y-4">
-                        <a class="flex items-center justify-between p-4 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-                           href="#">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center">
-                                    <img alt="GitHub" class="w-6 h-6"
+                        <div class="p-4 bg-white/10 rounded-lg space-y-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
+                                    <img alt="GitHub" class="w-5 h-5"
                                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzkGwdfYIqemLG3RswaIQY6ThE6yU0dp_ZDpsUgyOtXXuESjEbvhPbjDr5E0b1ghtE8RDR1-_z48e9ChceHs_uJbjmdMiR7mClDS3f9R9dYRrdCFWqRRjV2rLB-7j5eovUwXELex7C4mxl_Cp8dFWHBOngYND8WusY4hufmB_rlejOsUSCuOQmbf23Uy-GgkY9F2-iol939wzB0cmN7fybTr6zl-tIIOa42lyaOwf2vDPUNYFWtzZ1s84e4ji3PTUy9NdqiEqGTYY"/>
                                 </div>
-                                <span class="font-medium">GitHub Repository</span>
+                                <span class="font-medium text-sm">GitHub</span>
                             </div>
-                            <span class="material-symbols-outlined text-sm">link</span>
-                        </a>
-                        <a class="flex items-center justify-between p-4 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
-                           href="#">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-[#0077b5] flex items-center justify-center">
-                                    <img alt="LinkedIn" class="w-6 h-6"
+                            <input id="asset-github" type="url" placeholder="https://github.com/username"
+                                   class="w-full bg-white/10 border border-white/20 text-on-primary placeholder-white/40 rounded-md px-3 py-1.5 text-sm outline-none focus:border-white/60 transition-colors"
+                                   oninput="saveAssets()"/>
+                        </div>
+                        <div class="p-4 bg-white/10 rounded-lg space-y-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-[#0077b5] flex items-center justify-center flex-shrink-0">
+                                    <img alt="LinkedIn" class="w-5 h-5"
                                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKAF1pRZNxEdTmT5eal1oSQTmLdvFGZatE1aMiUognjcWzvHmVIL5-SRdkVJJJw23HdExaVCDwaM4AQZm9tUQcRCfruIzkdEvkjf2GnnV6W3jjqc8XTESaUEHaQj9AF43PoilWO3d7yQtOWrHdEJurMO6vFmSyiY2LKOhBjOqpBKw-PzC_KvmeAahrEGov03C9oxwHdIvzQ_SClwX5JKgArr6oni-pMz1bHxmHGekC7IZGLzj2mIuBb1jD4Q8HNIAfLMXVELYh4b0"/>
                                 </div>
-                                <span class="font-medium">LinkedIn Profile</span>
+                                <span class="font-medium text-sm">LinkedIn</span>
                             </div>
-                            <span class="material-symbols-outlined text-sm">link</span>
-                        </a>
+                            <input id="asset-linkedin" type="url" placeholder="https://linkedin.com/in/username"
+                                   class="w-full bg-white/10 border border-white/20 text-on-primary placeholder-white/40 rounded-md px-3 py-1.5 text-sm outline-none focus:border-white/60 transition-colors"
+                                   oninput="saveAssets()"/>
+                        </div>
                     </div>
                 </div>
                 <div class="mt-8">
@@ -327,7 +335,22 @@
             </div>
         </div>
     </section>
-    <!-- Unified Transition to User Details -->
+</div><!-- end #page-home -->
+
+<!-- ═══ TAB: PROFILE ═══ -->
+<div id="page-profile" class="hidden space-y-24 pt-0">
+
+    <!-- Profile Completion Banner -->
+    <div id="profile-banner" class="hidden bg-primary/5 border border-primary/10 rounded-card p-6 flex items-center gap-6">
+        <div class="flex-1">
+            <p class="font-bold text-on-surface mb-1">Profile completeness</p>
+            <div class="w-full h-2 bg-outline-variant/30 rounded-full overflow-hidden">
+                <div id="profile-bar-big" class="h-full bg-primary rounded-full transition-all duration-700" style="width:0%"></div>
+            </div>
+        </div>
+        <span id="profile-pct-big" class="text-3xl font-black text-primary">0%</span>
+    </div>
+
     <div class="w-full flex flex-col gap-24">
         <!-- Personal Summary -->
         <section class="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -336,24 +359,65 @@
                 <p class="text-on-surface-variant mt-2">Introduce yourself to the curator ecosystem.</p>
             </div>
             <div class="lg:col-span-8 bg-surface-container-lowest p-10 rounded-card shadow-[0_12px_40px_rgba(21,21,125,0.04)] border border-outline-variant/10">
-                <div class="space-y-8">
-                    <div class="flex justify-between items-start">
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Name</label>
-                            <h3 class="text-2xl font-bold">Alexander Sterling</h3>
+                <p class="text-xs text-outline mb-6 flex items-center gap-1"><span class="material-symbols-outlined text-sm">edit</span> Click any field to edit</p>
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">First Name</label>
+                            <div id="profile-first-name" contenteditable="true" data-field="first_name" data-placeholder="First name"
+                                 class="editable-field text-xl font-bold outline-none border-b-2 border-transparent focus:border-primary pb-1 transition-colors min-h-[2rem]"></div>
                         </div>
-                        <button class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary hover:bg-secondary-container transition-colors">
-                            <span class="material-symbols-outlined text-sm">edit</span>
-                        </button>
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Last Name</label>
+                            <div id="profile-last-name" contenteditable="true" data-field="last_name" data-placeholder="Last name"
+                                 class="editable-field text-xl font-bold outline-none border-b-2 border-transparent focus:border-primary pb-1 transition-colors min-h-[2rem]"></div>
+                        </div>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Professional
-                            Bio</label>
-                        <p class="text-lg text-on-surface-variant leading-relaxed">
-                            Senior Product Designer with 8+ years of experience building scalable design systems and
-                            AI-driven interfaces. Passionate about creating human-centric digital experiences that
-                            bridge the gap between complex data and intuitive interaction.
-                        </p>
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Title / Role</label>
+                        <div id="profile-subtitle" contenteditable="true" data-field="subtitle" data-placeholder="e.g. Software Engineer"
+                             class="editable-field text-base italic text-on-surface-variant outline-none border-b-2 border-transparent focus:border-primary pb-1 transition-colors min-h-[1.5rem]"></div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Professional Bio</label>
+                        <div id="profile-bio" contenteditable="true" data-field="bio" data-placeholder="A short professional summary about you…"
+                             class="editable-field text-base text-on-surface-variant leading-relaxed outline-none border-b-2 border-transparent focus:border-primary pb-1 transition-colors min-h-[4rem]"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Email</label>
+                            <div id="profile-email" contenteditable="true" data-field="email" data-placeholder="you@example.com"
+                                 class="editable-field text-sm text-on-surface-variant outline-none border-b-2 border-transparent focus:border-primary pb-1 transition-colors min-h-[1.5rem]"></div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Phone</label>
+                            <div id="profile-phone" contenteditable="true" data-field="phone" data-placeholder="+48 123 456 789"
+                                 class="editable-field text-sm text-on-surface-variant outline-none border-b-2 border-transparent focus:border-primary pb-1 transition-colors min-h-[1.5rem]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Connect Assets -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div class="lg:col-span-4">
+                <h2 class="text-3xl font-bold text-on-surface">Connect Assets</h2>
+                <p class="text-on-surface-variant mt-2">Links are added to your generated CVs.</p>
+            </div>
+            <div class="lg:col-span-8 bg-surface-container-lowest p-10 rounded-card shadow-[0_12px_40px_rgba(21,21,125,0.04)] border border-outline-variant/10">
+                <p class="text-xs text-outline mb-6 flex items-center gap-1"><span class="material-symbols-outlined text-sm">link</span> Paste your profile URLs below</p>
+                <div class="space-y-6">
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">GitHub URL</label>
+                        <input id="profile-github" type="url" placeholder="https://github.com/username"
+                               class="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"
+                               oninput="syncFromProfileAsset('github', this.value)"/>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">LinkedIn URL</label>
+                        <input id="profile-linkedin" type="url" placeholder="https://linkedin.com/in/username"
+                               class="w-full px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"
+                               oninput="syncFromProfileAsset('linkedin', this.value)"/>
                     </div>
                 </div>
             </div>
@@ -374,35 +438,8 @@
                             <span class="material-symbols-outlined text-sm">add</span>
                         </button>
                     </div>
-                    <div class="space-y-8">
-                        <div class="flex gap-6">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
-                                <span class="material-symbols-outlined text-secondary">layers</span>
-                            </div>
-                            <div class="flex-grow">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h5 class="font-bold">Principal Designer</h5>
-                                        <p class="text-sm text-on-surface-variant">Nexus Tech • 2021 — Present</p>
-                                    </div>
-                                    <span class="material-symbols-outlined text-sm text-outline">edit</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
-                                <span class="material-symbols-outlined text-secondary">hub</span>
-                            </div>
-                            <div class="flex-grow">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h5 class="font-bold">Senior UI/UX Specialist</h5>
-                                        <p class="text-sm text-on-surface-variant">Vortex Media • 2018 — 2021</p>
-                                    </div>
-                                    <span class="material-symbols-outlined text-sm text-outline">edit</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div id="experience-list" class="space-y-8">
+                        <p class="text-sm text-on-surface-variant">No experience data yet.</p>
                     </div>
                 </div>
                 <!-- Education -->
@@ -413,19 +450,8 @@
                             <span class="material-symbols-outlined text-sm">add</span>
                         </button>
                     </div>
-                    <div class="flex gap-6">
-                        <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
-                            <span class="material-symbols-outlined text-secondary">school</span>
-                        </div>
-                        <div class="flex-grow">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h5 class="font-bold">MFA in Interaction Design</h5>
-                                    <p class="text-sm text-on-surface-variant">Stanford University • 2016 — 2018</p>
-                                </div>
-                                <span class="material-symbols-outlined text-sm text-outline">edit</span>
-                            </div>
-                        </div>
+                    <div id="education-list" class="space-y-6">
+                        <p class="text-sm text-on-surface-variant">No education data yet.</p>
                     </div>
                 </div>
             </div>
@@ -438,102 +464,49 @@
             </div>
             <div class="lg:col-span-8">
                 <div class="bg-surface-container-lowest p-10 rounded-card shadow-[0_12px_40px_rgba(21,21,125,0.04)] border border-outline-variant/10">
-                    <div class="flex flex-wrap gap-3">
-                        <span class="bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10">Design Systems</span>
-                        <span class="bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10">AI Prompting</span>
-                        <span class="bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10">UX Research</span>
-                        <span class="bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10">React/Tailwind</span>
-                        <span class="bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10">Prototyping</span>
-                        <button class="bg-surface-container-highest px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase text-primary hover:bg-primary/10 transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">add</span> Add Skill
-                        </button>
+                    <div id="competencies-list" class="flex flex-wrap gap-3">
+                        <span class="text-sm text-on-surface-variant">No skills data yet. Upload your CV and generate your profile.</span>
                     </div>
                 </div>
             </div>
         </section>
-        <!-- Work Preferences -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <div class="lg:col-span-4">
-                <h2 class="text-3xl font-bold text-on-surface">Work Preferences</h2>
-                <p class="text-on-surface-variant mt-2">How and where you perform at your peak.</p>
-            </div>
-            <div class="lg:col-span-8 space-y-8">
-                <div class="bg-surface-container-lowest p-8 rounded-card border border-outline-variant/10">
-                    <h4 class="text-lg font-bold mb-6">Where do you work best?</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button class="flex flex-col items-center justify-center p-6 rounded-lg bg-secondary-container text-on-secondary-container ring-2 ring-secondary transition-all">
-                            <span class="material-symbols-outlined text-3xl mb-2">public</span>
-                            <span class="font-bold">Online / Remote</span>
-                        </button>
-                        <button class="flex flex-col items-center justify-center p-6 rounded-lg bg-surface-container-high hover:bg-secondary-container transition-all group">
-                            <span class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-on-secondary-container">domain_add</span>
-                            <span class="font-bold text-on-surface-variant group-hover:text-on-secondary-container">Hybrid</span>
-                        </button>
-                        <button class="flex flex-col items-center justify-center p-6 rounded-lg bg-surface-container-high hover:bg-secondary-container transition-all group">
-                            <span class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-on-secondary-container">apartment</span>
-                            <span class="font-bold text-on-surface-variant group-hover:text-on-secondary-container">Office</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-surface-container-lowest p-8 rounded-card border border-outline-variant/10">
-                    <div class="flex justify-between items-end mb-8">
-                        <div>
-                            <h4 class="text-lg font-bold">Commute Range</h4>
-                            <p class="text-sm text-on-surface-variant">Set your preferred radius from home base.</p>
-                        </div>
-                        <span class="text-2xl font-black text-secondary">25 km</span>
-                    </div>
-                    <div class="space-y-8">
-                        <div class="relative">
-                            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">location_on</span>
-                            <input class="w-full pl-12 pr-4 py-4 bg-surface-container-highest border-none rounded-lg focus:ring-2 focus:ring-primary transition-all text-on-surface font-medium"
-                                   placeholder="Search your city..." type="text"/>
-                        </div>
-                        <div class="px-2">
-                            <input class="w-full h-2 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-secondary"
-                                   max="100" min="0" type="range" value="25"/>
-                        </div>
-                        <div class="h-48 rounded-lg overflow-hidden relative grayscale opacity-70 border border-outline-variant/20">
-                            <div class="absolute inset-0 bg-secondary/5"></div>
-                            <img alt="Map background" class="w-full h-full object-cover"
-                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrmwnHTbFuvPg7OnSwK5YClXoOopbiV1P17n52VDmIqtuF_6ekXYQsOZfjWullxWUnCTphFqitop3bEqgE-w65f6sP6hwJ95pgdF_gstVgCkchH2aoRRGsJyqMPLOof5CdzVIPQgByjPvpLlKmwviRJwB_vJg2siXHzaRIeEkdKAj0j1cU9w5uriZ_WIYQjpHaNPNP7hGljHOLzs4UsaRi_0wY76QQM6eMPQEboZ-BrPcVGalsE96Z5DRaBI8MEqSasppjHHaNZ5I"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
+    </div><!-- end profile sections wrapper -->
+
     <!-- Final Call to Action -->
     <section class="text-center py-20 border-t border-outline-variant/10">
         <h2 class="text-4xl font-bold mb-6">Ready to meet your curator?</h2>
-        <p class="text-on-surface-variant max-w-lg mx-auto mb-10">Our AI engine is processing your profile. Finalize
-            your details to begin matching with exclusive opportunities.</p>
+        <p id="cta-desc" class="text-on-surface-variant max-w-lg mx-auto mb-10">Your profile is ready. Find opportunities that match your skills.</p>
         <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-            <button class="cta-gradient text-on-primary px-10 py-4 rounded-lg font-bold shadow-xl active:scale-95 transition-all text-lg">
-                Complete Onboarding
+            <button onclick="completeOnboarding()"
+                    class="cta-gradient text-on-primary px-10 py-4 rounded-lg font-bold shadow-xl active:scale-95 transition-all text-lg flex items-center gap-2">
+                <span class="material-symbols-outlined">rocket_launch</span>
+                Find Matching Jobs
             </button>
-            <button class="px-10 py-4 rounded-lg font-bold text-primary hover:bg-surface-container-high transition-all">
-                Save for Later
+            <button onclick="saveProfile()"
+                    class="px-10 py-4 rounded-lg font-bold text-primary hover:bg-surface-container-high transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">save</span>
+                Save Profile
             </button>
         </div>
+        <p id="save-confirm" class="hidden mt-4 text-sm text-secondary font-medium">Profile saved locally.</p>
     </section>
+
+</div><!-- end #page-profile -->
+
 </main>
 <!-- BottomNavBar (Fixed on mobile) -->
 <nav class="md:hidden fixed bottom-0 left-0 w-full z-50">
-    <div class="bg-[#ffffff]/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-[#c7c5d4]/15 shadow-[0_-12px_40px_rgba(21,21,125,0.06)] flex justify-around items-center px-4 py-3 pb-safe rounded-t-[1rem]">
-        <a class="flex flex-col items-center justify-center bg-[#68fadd] dark:bg-teal-900/40 text-[#007261] dark:text-teal-200 rounded-full px-6 py-2 transition-all active:scale-90 duration-200"
-           href="#">
+    <div class="bg-[#ffffff]/80 backdrop-blur-xl border-t border-[#c7c5d4]/15 shadow-[0_-12px_40px_rgba(21,21,125,0.06)] flex justify-around items-center px-4 py-3 pb-safe rounded-t-[1rem]">
+        <button id="mob-home" onclick="showTab('home')"
+                class="flex flex-col items-center justify-center bg-[#68fadd] text-[#007261] rounded-full px-6 py-2 transition-all active:scale-90 duration-200">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
             <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider mt-1">Home</span>
-        </a>
-        <a class="flex flex-col items-center justify-center text-[#464652] dark:text-slate-400 px-6 py-2" href="#">
+        </button>
+        <button id="mob-profile" onclick="showTab('profile')"
+                class="flex flex-col items-center justify-center text-[#464652] px-6 py-2 transition-all active:scale-90">
             <span class="material-symbols-outlined">account_circle</span>
             <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider mt-1">Profile</span>
-        </a>
-        <a class="flex flex-col items-center justify-center text-[#464652] dark:text-slate-400 px-6 py-2" href="#">
-            <span class="material-symbols-outlined">work</span>
-            <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider mt-1">Offers</span>
-        </a>
+        </button>
     </div>
 </nav>
 
@@ -618,12 +591,43 @@
 <script>
     // ── State ──────────────────────────────────────────────
     let selectedFile = null;
+    let currentTab = 'home';
+    window._offers = [];
+
+    // ── Tab switching ──────────────────────────────────────
+    function showTab(tab) {
+        currentTab = tab;
+        document.getElementById('page-home').classList.toggle('hidden', tab !== 'home');
+        document.getElementById('page-profile').classList.toggle('hidden', tab !== 'profile');
+
+        // Desktop nav active state
+        document.getElementById('nav-home').className = tab === 'home'
+            ? 'text-[#2E3192] font-bold bg-[#e4e1ea] px-3 py-1 rounded-lg transition-colors'
+            : 'text-[#464652] hover:bg-[#e4e1ea] px-3 py-1 rounded-lg transition-colors';
+        document.getElementById('nav-profile').className = tab === 'profile'
+            ? 'text-[#2E3192] font-bold bg-[#e4e1ea] px-3 py-1 rounded-lg transition-colors'
+            : 'text-[#464652] hover:bg-[#e4e1ea] px-3 py-1 rounded-lg transition-colors';
+
+        // Mobile nav active state
+        const mHome = document.getElementById('mob-home');
+        const mProf = document.getElementById('mob-profile');
+        mHome.className = tab === 'home'
+            ? 'flex flex-col items-center justify-center bg-[#68fadd] text-[#007261] rounded-full px-6 py-2 transition-all active:scale-90 duration-200'
+            : 'flex flex-col items-center justify-center text-[#464652] px-6 py-2 transition-all active:scale-90';
+        mProf.className = tab === 'profile'
+            ? 'flex flex-col items-center justify-center bg-[#68fadd] text-[#007261] rounded-full px-6 py-2 transition-all active:scale-90 duration-200'
+            : 'flex flex-col items-center justify-center text-[#464652] px-6 py-2 transition-all active:scale-90';
+
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
 
     // ── Init ───────────────────────────────────────────────
     (function init() {
         const token = localStorage.getItem('access_token');
         const username = localStorage.getItem('username');
         if (token && username) setLoggedIn(username);
+        initEditableFields();
+        loadSavedProfile();
     })();
 
     // ── Authenticated fetch with auto-refresh ──────────────
@@ -776,56 +780,195 @@
         }
     }
 
+    // ── Editable fields ────────────────────────────────────
+    function initEditableFields() {
+        document.querySelectorAll('.editable-field').forEach(el => {
+            el.addEventListener('blur', () => { saveProfile(true); updateCompletion(); });
+        });
+    }
+
+    function getProfileData() {
+        return {
+            first_name: document.getElementById('profile-first-name')?.textContent.trim() || '',
+            last_name:  document.getElementById('profile-last-name')?.textContent.trim() || '',
+            subtitle:   document.getElementById('profile-subtitle')?.textContent.trim() || '',
+            bio:        document.getElementById('profile-bio')?.textContent.trim() || '',
+            email:      document.getElementById('profile-email')?.textContent.trim() || '',
+            phone:      document.getElementById('profile-phone')?.textContent.trim() || '',
+        };
+    }
+
+    function setField(id, value) {
+        const el = document.getElementById(id);
+        if (el && value) el.textContent = value;
+    }
+
+    function loadSavedProfile() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('profile_data') || '{}');
+            if (saved.first_name) setField('profile-first-name', saved.first_name);
+            if (saved.last_name)  setField('profile-last-name',  saved.last_name);
+            if (saved.subtitle)   setField('profile-subtitle',   saved.subtitle);
+            if (saved.bio)        setField('profile-bio',        saved.bio);
+            if (saved.email)      setField('profile-email',      saved.email);
+            if (saved.phone)      setField('profile-phone',      saved.phone);
+            if (saved.github_url) {
+                const el = document.getElementById('asset-github');
+                if (el) el.value = saved.github_url;
+                const pel = document.getElementById('profile-github');
+                if (pel) pel.value = saved.github_url;
+            }
+            if (saved.linkedin_url) {
+                const el = document.getElementById('asset-linkedin');
+                if (el) el.value = saved.linkedin_url;
+                const pel = document.getElementById('profile-linkedin');
+                if (pel) pel.value = saved.linkedin_url;
+            }
+            updateCompletion();
+        } catch {}
+    }
+
+    function saveAssets() {
+        const saved = JSON.parse(localStorage.getItem('profile_data') || '{}');
+        const gh = document.getElementById('asset-github')?.value || '';
+        const li = document.getElementById('asset-linkedin')?.value || '';
+        saved.github_url = gh;
+        saved.linkedin_url = li;
+        const pgh = document.getElementById('profile-github');
+        if (pgh && pgh.value !== gh) pgh.value = gh;
+        const pli = document.getElementById('profile-linkedin');
+        if (pli && pli.value !== li) pli.value = li;
+        localStorage.setItem('profile_data', JSON.stringify(saved));
+    }
+
+    function syncFromProfileAsset(type, value) {
+        const saved = JSON.parse(localStorage.getItem('profile_data') || '{}');
+        if (type === 'github') {
+            saved.github_url = value;
+            const el = document.getElementById('asset-github');
+            if (el && el.value !== value) el.value = value;
+        } else {
+            saved.linkedin_url = value;
+            const el = document.getElementById('asset-linkedin');
+            if (el && el.value !== value) el.value = value;
+        }
+        localStorage.setItem('profile_data', JSON.stringify(saved));
+    }
+
+    function saveProfile(silent = false) {
+        localStorage.setItem('profile_data', JSON.stringify(getProfileData()));
+        if (!silent) {
+            const el = document.getElementById('save-confirm');
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 2500);
+        }
+        updateCompletion();
+    }
+
+    function updateCompletion() {
+        const d = getProfileData();
+        const skills = document.getElementById('competencies-list')?.querySelectorAll('span').length || 0;
+        const expItems = document.getElementById('experience-list')?.querySelectorAll('.flex.gap-6').length || 0;
+        const fields = [d.first_name, d.last_name, d.subtitle, d.bio, d.email,
+                        skills > 0 ? 'ok' : '', expItems > 0 ? 'ok' : ''];
+        const filled = fields.filter(Boolean).length;
+        const pct = Math.round((filled / fields.length) * 100);
+
+        ['completion-bar','profile-bar-big'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.width = pct + '%';
+        });
+        ['completion-pct','profile-pct-big'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = pct + '%';
+        });
+
+        const badge = document.getElementById('completion-badge');
+        if (badge) badge.classList.toggle('hidden', pct === 0);
+        const banner = document.getElementById('profile-banner');
+        if (banner) banner.classList.toggle('hidden', pct === 0);
+    }
+
+    function completeOnboarding() {
+        if (!localStorage.getItem('access_token')) { openAuthModal('login'); return; }
+        const skills = document.getElementById('skills-input').value.trim();
+        if (!skills) {
+            // Pull skills from competencies and pre-fill
+            const tags = [...document.getElementById('competencies-list').querySelectorAll('span')]
+                .map(s => s.textContent.trim()).slice(0, 8);
+            if (tags.length) document.getElementById('skills-input').value = tags.join(', ');
+        }
+        showTab('home');
+        setTimeout(() => {
+            document.getElementById('skills-input').focus();
+            document.getElementById('skills-input').scrollIntoView({behavior:'smooth', block:'center'});
+        }, 300);
+    }
+
     // ── Generate Resume ────────────────────────────────────
-    async function generateResume() {
+    async function generateResume(offerData = null) {
         const profileId = localStorage.getItem('profile_id');
         if (!localStorage.getItem('access_token')) { openAuthModal('login'); return; }
-        if (!profileId) {
-            showGenError('Could not determine your profile. Please log out and log in again.');
-            return;
-        }
+        if (!profileId) { showGenError('Could not determine your profile. Please log out and log in again.'); return; }
 
         const btn = document.getElementById('generate-btn');
         const progressEl = document.getElementById('gen-progress');
         const resultEl = document.getElementById('gen-result');
         const errorEl = document.getElementById('gen-error');
+        const renderStep = document.getElementById('step-render');
 
         btn.disabled = true;
         btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">autorenew</span> Working…';
         progressEl.classList.remove('hidden');
+        renderStep.classList.add('hidden');
         resultEl.classList.add('hidden');
         errorEl.classList.add('hidden');
-
-        setStep('analyze', 'active');
-        setStep('render', 'pending');
+        setProgress(0, 'Starting AI analysis…');
 
         try {
-            // Step 1: generate JSON resume via LLM
+            // Step 1: start async generation
+            const saved = JSON.parse(localStorage.getItem('profile_data') || '{}');
+            const profileLinks = {};
+            if (saved.github_url) profileLinks.github_url = saved.github_url;
+            if (saved.linkedin_url) profileLinks.linkedin_url = saved.linkedin_url;
+            const payload = {};
+            if (offerData) payload.offer = offerData;
+            if (Object.keys(profileLinks).length) payload.profile_links = profileLinks;
             const fillRes = await authFetch(`/cv-engine/fill-cv/${profileId}/`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload),
             });
             const fillData = await fillRes.json().catch(() => ({}));
-            if (!fillRes.ok) {
-                throw new Error('AI analysis failed: ' + (fillData.details || fillData.error || fillRes.status));
-            }
-            const resumeId = fillData.generatedResume_id;
-            setStep('analyze', 'done');
+            if (!fillRes.ok) throw new Error('AI analysis failed: ' + (fillData.error || fillRes.status));
 
-            // Step 2: render PDF
-            setStep('render', 'active');
-            const pdfRes = await authFetch(`/cv-engine/create-resume-pdf/${resumeId}/`, {
+            const taskId = fillData.task_id;
+
+            // Step 2: poll for progress
+            const result = await pollGeneration(taskId);
+            if (result.status === 'error') throw new Error('AI analysis failed: ' + result.error);
+
+            setProgress(100, 'Analysis complete!');
+            if (result.resume) populateSections(result.resume);
+
+            // Step 3: render PDF
+            renderStep.classList.remove('hidden');
+            document.getElementById('step-render-icon').textContent = 'autorenew';
+            document.getElementById('step-render-icon').classList.add('animate-spin');
+
+            const pdfRes = await authFetch(`/cv-engine/create-resume-pdf/${result.generatedResume_id}/`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
             });
             const pdfData = await pdfRes.json().catch(() => ({}));
-            if (!pdfRes.ok) {
-                throw new Error('PDF rendering failed: ' + (pdfData.details || pdfData.error || pdfRes.status));
-            }
-            setStep('render', 'done');
+            if (!pdfRes.ok) throw new Error('PDF rendering failed: ' + (pdfData.error || pdfRes.status));
+
+            document.getElementById('step-render-icon').textContent = 'check_circle';
+            document.getElementById('step-render-icon').classList.remove('animate-spin');
+            renderStep.querySelector('span:last-child').textContent = 'PDF ready!';
 
             const pdfUrl = pdfData.pdf_path || '';
-            if (!pdfUrl) throw new Error('PDF was not generated. Check server logs.');
+            if (!pdfUrl) throw new Error('PDF was not generated.');
             document.getElementById('pdf-link').href = pdfUrl;
             resultEl.classList.remove('hidden');
             resultEl.scrollIntoView({behavior: 'smooth', block: 'nearest'});
@@ -838,31 +981,110 @@
         }
     }
 
-    function setStep(step, state) {
-        const el = document.getElementById(`step-${step}`);
-        const icon = document.getElementById(`step-${step}-icon`);
-        if (state === 'active') {
-            el.classList.remove('text-on-surface-variant');
-            el.classList.add('text-primary', 'font-bold');
-            icon.textContent = 'autorenew';
-            icon.classList.add('animate-spin');
-        } else if (state === 'done') {
-            el.classList.remove('text-on-surface-variant', 'text-primary');
-            el.classList.add('text-secondary', 'font-bold');
-            icon.textContent = 'check_circle';
-            icon.classList.remove('animate-spin');
-        } else {
-            el.classList.add('text-on-surface-variant');
-            el.classList.remove('text-primary', 'text-secondary', 'font-bold');
-            icon.textContent = 'radio_button_unchecked';
-            icon.classList.remove('animate-spin');
+    async function pollGeneration(taskId) {
+        while (true) {
+            await new Promise(r => setTimeout(r, 2000));
+            const res = await authFetch(`/cv-engine/generation-status/${taskId}/`);
+            const data = await res.json().catch(() => ({}));
+
+            if (data.status === 'running') {
+                const label = data.current
+                    ? `Analyzing: ${data.current} (${data.done_sections}/${data.total_sections})`
+                    : 'Analyzing…';
+                setProgress(data.progress || 0, label);
+            } else {
+                return data;
+            }
         }
+    }
+
+    function setProgress(pct, label) {
+        document.getElementById('gen-progress-bar').style.width = pct + '%';
+        document.getElementById('gen-progress-pct').textContent = pct + '%';
+        document.getElementById('gen-progress-label').textContent = label;
     }
 
     function showGenError(msg) {
         const el = document.getElementById('gen-error');
         el.textContent = msg;
         el.classList.remove('hidden');
+    }
+
+    // ── Populate page sections from generated resume ────────
+    function populateSections(resume) {
+        const p = resume.personal || {};
+        const info = p.info || {};
+
+        // Personal Summary — editable fields
+        const firstName = (p.first_name || '').trim();
+        const lastName = (p.last_name || '').trim();
+        if (firstName) setField('profile-first-name', firstName);
+        if (lastName)  setField('profile-last-name',  lastName);
+        if (!firstName && !lastName) {
+            const uname = (localStorage.getItem('username') || '').replace(/[._\-]/g, ' ').trim();
+            const parts = uname.split(/\s+/).filter(Boolean);
+            if (parts.length >= 2) {
+                setField('profile-first-name', parts[0]);
+                setField('profile-last-name', parts.slice(1).join(' '));
+            } else if (uname) {
+                setField('profile-first-name', uname);
+            }
+        }
+        if (p.subtitle)           setField('profile-subtitle', p.subtitle);
+        if (info.description)     setField('profile-bio',      info.description);
+        if (info.email)           setField('profile-email',    info.email);
+        if (info.telephone_label) setField('profile-phone',    info.telephone_label);
+
+        // Experience
+        const expList = (resume.experience || {}).experienceList || [];
+        const expEl = document.getElementById('experience-list');
+        if (expList.length) {
+            const icons = ['layers', 'hub', 'work', 'business_center', 'engineering'];
+            expEl.innerHTML = expList.map((e, i) => `
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary">${icons[i % icons.length]}</span>
+                    </div>
+                    <div class="flex-grow">
+                        <h5 class="font-bold">${escHtml(e.position || '')}</h5>
+                        <p class="text-sm text-on-surface-variant">${escHtml(e.years || '')}</p>
+                        ${(e.highlights||[]).length ? `<ul class="mt-2 space-y-1">${e.highlights.slice(0,2).map(h=>`<li class="text-xs text-on-surface-variant">• ${escHtml(h)}</li>`).join('')}</ul>` : ''}
+                    </div>
+                </div>`).join('');
+        }
+
+        // Education
+        const eduList = (resume.education || {}).educationList || [];
+        const eduEl = document.getElementById('education-list');
+        if (eduList.length) {
+            eduEl.innerHTML = eduList.map(e => `
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary">school</span>
+                    </div>
+                    <div class="flex-grow">
+                        <h5 class="font-bold">${escHtml(e.degree || '')}</h5>
+                        <p class="text-sm text-on-surface-variant">${escHtml(e.school || '')}${e.years ? ' • ' + escHtml(e.years) : ''}</p>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Core Competencies + pre-fill Curate input
+        const skillsList = (resume.skills || {}).skillsList || [];
+        const allSkills = skillsList.flatMap(cat => cat.items || []);
+        const compEl = document.getElementById('competencies-list');
+        if (allSkills.length) {
+            compEl.innerHTML = allSkills.map(s =>
+                `<span class="bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10">${escHtml(s)}</span>`
+            ).join('');
+            const topSkills = allSkills.slice(0, 8).join(', ');
+            const skillsInput = document.getElementById('skills-input');
+            if (skillsInput && !skillsInput.value) skillsInput.value = topSkills;
+        }
+
+        saveProfile(true);
+        updateCompletion();
+        showTab('profile');
     }
 
     // ── Curate offers ─────────────────────────────────────
@@ -902,7 +1124,8 @@
             if (!data.length) {
                 emptyEl.classList.remove('hidden');
             } else {
-                listEl.innerHTML = data.map(offer => renderOfferCard(offer)).join('');
+                window._offers = data;
+                listEl.innerHTML = data.map((offer, idx) => renderOfferCard(offer, idx)).join('');
                 listEl.scrollIntoView({behavior: 'smooth', block: 'start'});
             }
         } catch (e) {
@@ -914,27 +1137,166 @@
         }
     }
 
-    function renderOfferCard(offer) {
-        const skills = (offer.required_skills || []).slice(0, 6);
-        const skillTags = skills.map(s =>
-            `<span class="px-2 py-1 bg-secondary-fixed-dim/10 text-on-secondary-container rounded-full text-[10px] font-bold tracking-widest uppercase">${escHtml(s)}</span>`
+    function renderOfferCard(offer, idx) {
+        const pct = offer.match_pct ?? 0;
+        const matched = offer.matched_skills || [];
+        const missing = offer.missing_skills || [];
+
+        const pctColor = pct >= 70 ? 'text-secondary' : pct >= 40 ? 'text-primary' : 'text-on-surface-variant';
+        const barColor = pct >= 70 ? 'bg-secondary' : pct >= 40 ? 'bg-primary' : 'bg-outline-variant';
+
+        const matchedTags = matched.slice(0, 4).map(s =>
+            `<span class="px-2 py-1 bg-secondary/10 text-secondary rounded-full text-[10px] font-bold">${escHtml(s)}</span>`
         ).join('');
-        const moreSkills = (offer.required_skills || []).length > 6
-            ? `<span class="text-xs text-on-surface-variant">+${(offer.required_skills.length - 6)} more</span>` : '';
-        const bodyPreview = (offer.body || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+        const missingTags = missing.slice(0, 3).map(s =>
+            `<span class="px-2 py-1 bg-surface-container text-on-surface-variant rounded-full text-[10px]">${escHtml(s)}</span>`
+        ).join('');
+        const bodyPreview = (offer.body || '').replace(/\s+/g, ' ').trim().slice(0, 100);
+        const applyUrl = `https://justjoin.it/offers/${escHtml(offer.slug)}`;
 
         return `
-        <div class="bg-surface-container-lowest rounded-card p-6 border border-outline-variant/10 hover:shadow-md transition-shadow flex flex-col gap-4">
-            <div>
-                <h3 class="font-bold text-on-surface text-base leading-tight mb-1">${escHtml(offer.title)}</h3>
-                <p class="text-xs text-on-surface-variant line-clamp-2">${escHtml(bodyPreview)}${bodyPreview.length === 120 ? '…' : ''}</p>
+        <div id="offer-card-${idx}" class="bg-surface-container-lowest rounded-card p-6 border border-outline-variant/10 hover:shadow-md transition-shadow flex flex-col gap-3">
+            <div class="flex justify-between items-start gap-2">
+                <h3 class="font-bold text-on-surface text-base leading-tight">${escHtml(offer.title)}</h3>
+                <div class="flex-shrink-0 text-right">
+                    <span class="text-2xl font-black ${pctColor}">${pct}%</span>
+                    <p class="text-[10px] text-on-surface-variant">match</p>
+                </div>
             </div>
-            <div class="flex flex-wrap gap-1.5 items-center">${skillTags}${moreSkills}</div>
-            <a href="https://justjoin.it/offers/${escHtml(offer.slug)}" target="_blank" rel="noopener"
-               class="mt-auto flex items-center gap-1 text-xs font-bold text-primary hover:underline">
-                View on JustJoin.it <span class="material-symbols-outlined text-[14px]">open_in_new</span>
-            </a>
+            <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                <div class="${barColor} h-full rounded-full transition-all" style="width:${pct}%"></div>
+            </div>
+            <p class="text-xs text-on-surface-variant line-clamp-2">${escHtml(bodyPreview)}${bodyPreview.length === 100 ? '…' : ''}</p>
+            <div>
+                ${matched.length ? `<p class="text-[10px] font-bold text-secondary mb-1">✓ You have</p><div class="flex flex-wrap gap-1 mb-2">${matchedTags}${matched.length > 4 ? `<span class="text-[10px] text-secondary">+${matched.length - 4}</span>` : ''}</div>` : ''}
+                ${missing.length ? `<p class="text-[10px] font-bold text-on-surface-variant mb-1">✗ Missing</p><div class="flex flex-wrap gap-1">${missingTags}${missing.length > 3 ? `<span class="text-[10px] text-on-surface-variant">+${missing.length - 3}</span>` : ''}</div>` : ''}
+            </div>
+            <!-- In-card CV generation -->
+            <div id="incard-cv-${idx}" class="hidden mt-1 border-t border-outline-variant/10 pt-3 space-y-2">
+                <div id="incard-prog-${idx}" class="hidden space-y-1.5">
+                    <div class="flex justify-between text-xs">
+                        <span id="incard-label-${idx}" class="text-on-surface-variant">Starting…</span>
+                        <span id="incard-pct-${idx}" class="font-bold text-primary">0%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                        <div id="incard-bar-${idx}" class="h-full bg-primary rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
+                <div id="incard-result-${idx}" class="hidden flex gap-2">
+                    <a id="incard-pdf-${idx}" href="#" target="_blank"
+                       class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-secondary text-on-primary text-xs font-bold hover:opacity-90 transition-all">
+                        <span class="material-symbols-outlined text-[14px]">picture_as_pdf</span> Save PDF
+                    </a>
+                    <a href="${applyUrl}" target="_blank" rel="noopener"
+                       class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-primary text-primary text-xs font-bold hover:bg-primary/5 transition-all">
+                        <span class="material-symbols-outlined text-[14px]">open_in_new</span> Apply
+                    </a>
+                </div>
+                <div id="incard-error-${idx}" class="hidden text-xs text-error p-2 bg-error-container rounded-lg"></div>
+            </div>
+            <div class="flex gap-2 mt-auto pt-2 border-t border-outline-variant/10">
+                <a href="${applyUrl}" target="_blank" rel="noopener"
+                   class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-primary text-primary text-xs font-bold hover:bg-primary/5 transition-all">
+                    <span class="material-symbols-outlined text-[14px]">open_in_new</span> Apply
+                </a>
+                <button id="incard-btn-${idx}" onclick="startInCardCV(${idx})"
+                        class="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold hover:opacity-90 transition-all">
+                    <span class="material-symbols-outlined text-[14px]">auto_awesome</span> Tailored CV
+                </button>
+            </div>
         </div>`;
+    }
+
+    async function startInCardCV(idx) {
+        if (!localStorage.getItem('access_token')) { openAuthModal('login'); return; }
+        const profileId = localStorage.getItem('profile_id');
+        if (!profileId) { alert('No profile found. Log out and log in again.'); return; }
+
+        const offer = (window._offers || [])[idx];
+        if (!offer) return;
+
+        const btn = document.getElementById(`incard-btn-${idx}`);
+        const cvSection = document.getElementById(`incard-cv-${idx}`);
+        const progEl = document.getElementById(`incard-prog-${idx}`);
+        const resultEl = document.getElementById(`incard-result-${idx}`);
+        const errorEl = document.getElementById(`incard-error-${idx}`);
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[14px] animate-spin">autorenew</span> Working…';
+        cvSection.classList.remove('hidden');
+        progEl.classList.remove('hidden');
+        resultEl.classList.add('hidden');
+        errorEl.classList.add('hidden');
+        setInCardProgress(idx, 0, 'Starting…');
+
+        try {
+            const saved = JSON.parse(localStorage.getItem('profile_data') || '{}');
+            const profileLinks = {};
+            if (saved.github_url) profileLinks.github_url = saved.github_url;
+            if (saved.linkedin_url) profileLinks.linkedin_url = saved.linkedin_url;
+            const payload = {offer};
+            if (Object.keys(profileLinks).length) payload.profile_links = profileLinks;
+
+            const fillRes = await authFetch(`/cv-engine/fill-cv/${profileId}/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload),
+            });
+            const fillData = await fillRes.json().catch(() => ({}));
+            if (!fillRes.ok) throw new Error('Generation failed: ' + (fillData.error || fillRes.status));
+
+            const taskId = fillData.task_id;
+            const result = await pollInCardGeneration(taskId, idx);
+            if (result.status === 'error') throw new Error('Generation failed: ' + result.error);
+
+            setInCardProgress(idx, 100, 'Rendering PDF…');
+
+            const pdfRes = await authFetch(`/cv-engine/create-resume-pdf/${result.generatedResume_id}/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+            });
+            const pdfData = await pdfRes.json().catch(() => ({}));
+            if (!pdfRes.ok) throw new Error('PDF failed: ' + (pdfData.error || pdfRes.status));
+
+            const pdfUrl = pdfData.pdf_path || '';
+            if (!pdfUrl) throw new Error('PDF not generated.');
+
+            progEl.classList.add('hidden');
+            document.getElementById(`incard-pdf-${idx}`).href = pdfUrl;
+            resultEl.classList.remove('hidden');
+
+        } catch (e) {
+            progEl.classList.add('hidden');
+            errorEl.textContent = e.message;
+            errorEl.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined text-[14px]">auto_awesome</span> Retry';
+        }
+    }
+
+    async function pollInCardGeneration(taskId, idx) {
+        while (true) {
+            await new Promise(r => setTimeout(r, 2000));
+            const res = await authFetch(`/cv-engine/generation-status/${taskId}/`);
+            const data = await res.json().catch(() => ({}));
+            if (data.status === 'running') {
+                const label = data.current
+                    ? `${data.current} (${data.done_sections}/${data.total_sections})`
+                    : 'Analyzing…';
+                setInCardProgress(idx, data.progress || 0, label);
+            } else {
+                return data;
+            }
+        }
+    }
+
+    function setInCardProgress(idx, pct, label) {
+        const bar = document.getElementById(`incard-bar-${idx}`);
+        const pctEl = document.getElementById(`incard-pct-${idx}`);
+        const labelEl = document.getElementById(`incard-label-${idx}`);
+        if (bar) bar.style.width = pct + '%';
+        if (pctEl) pctEl.textContent = pct + '%';
+        if (labelEl) labelEl.textContent = label;
     }
 
     function escHtml(str) {
