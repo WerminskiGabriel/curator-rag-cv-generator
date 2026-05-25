@@ -1,7 +1,29 @@
 
-import json
-import urllib.request
-from urllib.error import URLError
+# Rodziny umiejętności — jeśli użytkownik zna jedną, liczy jako znajomość pozostałych
+SKILL_FAMILIES: dict[str, set[str]] = {
+    'sql':        {'mysql', 'postgresql', 'postgres', 'sqlite', 'mssql', 'tsql', 'oracle', 'mariadb', 'plsql'},
+    'javascript': {'js', 'typescript', 'ts', 'node', 'nodejs', 'node.js', 'react', 'react.js',
+                   'vue', 'vue.js', 'angular', 'next.js', 'nextjs', 'nuxt'},
+    'python':     {'django', 'flask', 'fastapi', 'pandas', 'numpy', 'scipy'},
+    'java':       {'spring', 'spring boot', 'maven', 'gradle', 'hibernate', 'kotlin'},
+    'cloud':      {'aws', 'azure', 'gcp', 'google cloud', 'ec2', 's3', 'lambda'},
+    'docker':     {'kubernetes', 'k8s', 'containers', 'helm', 'docker compose'},
+    'git':        {'github', 'gitlab', 'bitbucket', 'version control'},
+    'linux':      {'unix', 'bash', 'shell', 'cli', 'terminal'},
+    'rest':       {'api', 'rest api', 'restful', 'http', 'openapi', 'swagger'},
+    'nosql':      {'mongodb', 'redis', 'elasticsearch', 'cassandra', 'dynamodb', 'couchdb'},
+    'ci/cd':      {'jenkins', 'github actions', 'gitlab ci', 'circleci', 'travis', 'pipeline'},
+    'agile':      {'scrum', 'kanban', 'jira', 'confluence', 'sprint'},
+    'c':          {'c++', 'c#', 'cpp'},
+    'testing':    {'pytest', 'junit', 'selenium', 'cypress', 'jest', 'tdd', 'bdd', 'qa'},
+}
+
+# Indeks odwrotny: każda umiejętność → jej rodzina
+_SKILL_TO_FAMILY: dict[str, str] = {}
+for _family, _members in SKILL_FAMILIES.items():
+    for _m in _members:
+        _SKILL_TO_FAMILY[_m] = _family
+    _SKILL_TO_FAMILY[_family] = _family
 
 
 def _skill_name(skill) -> str:
@@ -10,15 +32,50 @@ def _skill_name(skill) -> str:
     return str(skill)
 
 
+def _normalize(s: str) -> str:
+    return s.strip().lower()
+
+
+def _skills_match(user_skill: str, required_skill: str) -> bool:
+    """Returns True if user_skill covers required_skill (exact, substring, or same family)."""
+    u = _normalize(user_skill)
+    r = _normalize(required_skill)
+    if u == r or u in r or r in u:
+        return True
+    # Same skill family?
+    return _SKILL_TO_FAMILY.get(u) is not None and _SKILL_TO_FAMILY.get(u) == _SKILL_TO_FAMILY.get(r)
+
+
+def compute_match(user_skills: list[str], required_skills: list[str]) -> dict:
+    """
+    Returns {'score': int, 'pct': int, 'matched': [...], 'missing': [...]}.
+    score  = number of required skills covered by the user.
+    pct    = score / len(required_skills) * 100, clamped to 0-100.
+    """
+    if not required_skills:
+        return {'score': 0, 'pct': 0, 'matched': [], 'missing': []}
+
+    matched = []
+    missing = []
+    for req in required_skills:
+        if any(_skills_match(u, req) for u in user_skills):
+            matched.append(req)
+        else:
+            missing.append(req)
+
+    pct = round(len(matched) / len(required_skills) * 100)
+    return {'score': len(matched), 'pct': pct, 'matched': matched, 'missing': missing}
+
+
 def match_offers_by_skills(user_skills_text: str, limit: int = 20) -> list:
     """
-    Returns offers ranked by how many of the user's skills overlap with required_skills.
-    user_skills_text: comma/space separated string, e.g. "Python, Django, React"
+    Returns offers ranked by smart skill match score.
+    Each offer includes match_pct, matched_skills, missing_skills.
     """
     from api.models import JobOffer
 
-    raw_tokens = [t.strip().lower() for t in user_skills_text.replace(',', ' ').split() if t.strip()]
-    if not raw_tokens:
+    user_tokens = [t.strip() for t in user_skills_text.replace(',', ' ').split() if t.strip()]
+    if not user_tokens:
         return []
 
     offers = list(
@@ -29,20 +86,20 @@ def match_offers_by_skills(user_skills_text: str, limit: int = 20) -> list:
 
     scored = []
     for offer in offers:
-        offer_skills = [_skill_name(s).lower() for s in (offer.get('required_skills') or [])]
-        score = sum(
-            1 for token in raw_tokens
-            if any(token in skill or skill in token for skill in offer_skills)
-        )
-        if score > 0:
-            scored.append({**offer, '_score': score})
+        req_skills = [_skill_name(s) for s in (offer.get('required_skills') or [])]
+        match = compute_match(user_tokens, req_skills)
+        if match['score'] > 0:
+            scored.append({**offer, '_match': match})
 
-    scored.sort(key=lambda o: o['_score'], reverse=True)
+    scored.sort(key=lambda o: o['_match']['pct'], reverse=True)
 
     results = []
     for o in scored[:limit]:
-        o.pop('_score', None)
+        match = o.pop('_match')
         o['required_skills'] = [_skill_name(s) for s in (o.get('required_skills') or [])]
+        o['match_pct'] = match['pct']
+        o['matched_skills'] = match['matched']
+        o['missing_skills'] = match['missing']
         results.append(o)
 
     return results

@@ -5,7 +5,7 @@ from langchain_ollama import OllamaLLM
 from cv_engine.services.sections import SECTIONS
 
 
-def generate_cv_data_llm(profile_id, offer: dict = None):
+def generate_cv_data_llm(profile_id, offer: dict = None, progress_callback=None):
     """
     Generates a personalized resume dict for a given profile using RAG + Ollama LLM.
 
@@ -65,7 +65,10 @@ def generate_cv_data_llm(profile_id, offer: dict = None):
         }
     }
 
-    for section_name, section_value in SECTIONS.items():
+    section_list = list(SECTIONS.items())
+    total_sections = len(section_list)
+
+    for idx, (section_name, section_value) in enumerate(section_list):
         schema = section_value["schema"]
         base_rag_prompt = section_value["rag_prompt"]
         section_model_prompt = section_value["model_prompt"]
@@ -130,5 +133,8 @@ TASK: FIX ERRORS. Keep Last_RESPONSE fields that were right and change only ones
 
         if attempts > max_attempts:
             raise Exception(f"Max attempts reached for {section_name}. Last error: {str(last_error)}")
+
+        if progress_callback:
+            progress_callback(idx + 1, total_sections, section_name)
 
     return new_resume
