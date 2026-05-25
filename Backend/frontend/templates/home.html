@@ -985,7 +985,9 @@
         while (true) {
             await new Promise(r => setTimeout(r, 2000));
             const res = await authFetch(`/cv-engine/generation-status/${taskId}/`);
-            const data = await res.json().catch(() => ({}));
+            if (!res.ok) continue;
+            const data = await res.json().catch(() => null);
+            if (!data) continue;
 
             if (data.status === 'running') {
                 const label = data.current
@@ -1278,7 +1280,9 @@
         while (true) {
             await new Promise(r => setTimeout(r, 2000));
             const res = await authFetch(`/cv-engine/generation-status/${taskId}/`);
-            const data = await res.json().catch(() => ({}));
+            if (!res.ok) continue;
+            const data = await res.json().catch(() => null);
+            if (!data) continue;
             if (data.status === 'running') {
                 const label = data.current
                     ? `${data.current} (${data.done_sections}/${data.total_sections})`

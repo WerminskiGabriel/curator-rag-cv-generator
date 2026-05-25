@@ -1,6 +1,6 @@
 import threading
-import uuid
 
+from django.db import close_old_connections
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -8,12 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from api.models import Profile
-from cv_engine.models import GeneratedResume
+from cv_engine.models import GeneratedResume, GenerationTask
 from cv_engine.services import generate_cv_data_llm
-
-# In-memory task store: task_id -> dict
-_tasks: dict = {}
-_tasks_lock = threading.Lock()
 
 SECTION_LABELS = {
     'personal':   'Personal info',
@@ -25,14 +21,15 @@ SECTION_LABELS = {
 
 
 def _run_generation(task_id: str, user, profile_id: int, offer: dict | None, profile_links: dict | None = None):
+    close_old_connections()
+
     def on_progress(done: int, total: int, section_name: str):
-        with _tasks_lock:
-            _tasks[task_id].update({
-                'progress': int(done / total * 100),
-                'current': SECTION_LABELS.get(section_name, section_name),
-                'done_sections': done,
-                'total_sections': total,
-            })
+        GenerationTask.objects.filter(task_id=task_id).update(
+            progress=int(done / total * 100),
+            current=SECTION_LABELS.get(section_name, section_name),
+            done_sections=done,
+            total_sections=total,
+        )
 
     try:
         resume_json = generate_cv_data_llm.generate_cv_data_llm(
@@ -51,18 +48,20 @@ def _run_generation(task_id: str, user, profile_id: int, offer: dict | None, pro
                 info['linkedin_label'] = li.replace('https://', '').replace('http://', '').rstrip('/')
 
         doc = GeneratedResume.objects.create(user=user, generatedJson=resume_json)
-        with _tasks_lock:
-            _tasks[task_id].update({
-                'status': 'done',
-                'progress': 100,
-                'generatedResume_id': doc.id,
-                'resume': resume_json,
-            })
+        GenerationTask.objects.filter(task_id=task_id).update(
+            status=GenerationTask.STATUS_DONE,
+            progress=100,
+            generated_resume=doc,
+        )
     except Exception as exc:
         import traceback
         traceback.print_exc()
-        with _tasks_lock:
-            _tasks[task_id].update({'status': 'error', 'error': str(exc)})
+        GenerationTask.objects.filter(task_id=task_id).update(
+            status=GenerationTask.STATUS_ERROR,
+            error_message=str(exc),
+        )
+    finally:
+        close_old_connections()
 
 
 @api_view(['POST'])
@@ -70,22 +69,15 @@ def _run_generation(task_id: str, user, profile_id: int, offer: dict | None, pro
 def generate_and_fill_cv_to_model(request, profile_id):
     """
     Starts async CV generation. Returns task_id immediately.
-    Optionally accepts offer data in request body to generate a tailored CV.
+    Optionally accepts offer data and profile_links in request body.
     """
     get_object_or_404(Profile, id=profile_id, user=request.user)
 
     offer = request.data.get('offer') or None
     profile_links = request.data.get('profile_links') or None
 
-    task_id = str(uuid.uuid4())
-    with _tasks_lock:
-        _tasks[task_id] = {
-            'status': 'running',
-            'progress': 0,
-            'current': 'Starting…',
-            'done_sections': 0,
-            'total_sections': 5,
-        }
+    task = GenerationTask.objects.create(user=request.user)
+    task_id = str(task.task_id)
 
     thread = threading.Thread(
         target=_run_generation,
@@ -104,10 +96,24 @@ def generation_status(request, task_id):
     Returns current progress of a CV generation task.
     status: 'running' | 'done' | 'error'
     """
-    with _tasks_lock:
-        task = _tasks.get(task_id)
-
-    if not task:
+    try:
+        task = GenerationTask.objects.get(task_id=task_id, user=request.user)
+    except GenerationTask.DoesNotExist:
         return Response({'error': 'Task not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response(task, status=status.HTTP_200_OK)
+    data = {
+        'status': task.status,
+        'progress': task.progress,
+        'current': task.current,
+        'done_sections': task.done_sections,
+        'total_sections': task.total_sections,
+    }
+    if task.status == GenerationTask.STATUS_DONE:
+        data['generatedResume_id'] = task.generated_resume_id
+        # Include resume JSON for populateSections()
+        if task.generated_resume:
+            data['resume'] = task.generated_resume.generatedJson
+    if task.status == GenerationTask.STATUS_ERROR:
+        data['error'] = task.error_message
+
+    return Response(data, status=status.HTTP_200_OK)
