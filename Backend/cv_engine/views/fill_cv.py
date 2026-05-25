@@ -20,10 +20,9 @@ def generate_and_fill_cv_to_model(request, profile_id):
     profile = get_object_or_404(Profile, id=profile_id, user=request.user)
     try:
         new_resume_base = generate_cv_data_llm.generate_cv_data_llm(profile_id)
-        # TODO change user to job model
         doc = GeneratedResume.objects.create(user=request.user, generatedJson=new_resume_base)
 
-        return Response( doc.generatedJson, status=status.HTTP_201_CREATED)
+        return Response({'generatedResume_id': doc.id, 'resume': doc.generatedJson}, status=status.HTTP_201_CREATED)
     except Exception as e:
         import traceback
         print(traceback.format_exc())

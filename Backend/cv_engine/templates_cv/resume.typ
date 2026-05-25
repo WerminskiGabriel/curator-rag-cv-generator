@@ -59,24 +59,27 @@
   text(size: 15pt, weight: "bold")[#meta.personal.subtitle]
 )
 
+#let safe-link(url, label) = {
+  if url != "" and label != "" [ #link(url)[#label] ] else if label != "" [ #label ] else []
+}
+
 #grid(
-  columns: (10pt, auto,10pt,auto),
+  columns: (10pt, auto, 10pt, auto),
   row-gutter: 8pt,
-  column-gutter: (2pt,   70pt, 2pt), 
+  column-gutter: (2pt, 70pt, 2pt),
   align: (center + horizon, left + horizon),
 
-  [#icon("./icons/phone.png") ],[ #link( meta.personal.info.telephone_link)[#meta.personal.info.telephone_label]],
-  [#icon("./icons/mail.png") ],[#link(meta.personal.info.email)[#meta.personal.info.email]],
-  [#icon("./icons/github.png")],[ #link(meta.personal.info.github_link)[#meta.personal.info.github_label]],
-  [#icon("./icons/linkedin.png") ],[#link(meta.personal.info.linkedin_link)[#meta.personal.info.linkedin_label]],
-  
+  [#icon("./icons/phone.png")],  [#safe-link(meta.personal.info.telephone_link, meta.personal.info.telephone_label)],
+  [#icon("./icons/mail.png")],   [#safe-link("mailto:" + meta.personal.info.email, meta.personal.info.email)],
+  [#icon("./icons/github.png")], [#safe-link(meta.personal.info.github_link, meta.personal.info.github_label)],
+  [#icon("./icons/linkedin.png")],[#safe-link(meta.personal.info.linkedin_link, meta.personal.info.linkedin_label)],
 )
 
 
 // ABOUT ME
 #section-heading("About Me")
 
-#meta.personal.about.description
+#meta.personal.info.description
 
 
 // TECHNICAL SKILLS
@@ -87,11 +90,11 @@
   row-gutter: 1em,
   column-gutter: (2em),
   align: (left, left),
-   ..meta.skills.entries.map(entry => (
+   ..meta.skills.skillsList.map(entry => (
     [#entry.category],
     [#entry.items]
   )).flatten()
-) 
+)
 
 
 
@@ -99,10 +102,10 @@
 // EDUCATION
 #section-heading("Education")
 
-#for entry in meta.education.entries {
+#for entry in meta.education.educationList {
   entry-header(entry.school, entry.years)
   entry-subtitle(entry.degree)
-  
+
   for highlight in entry.highlights {
     [- #highlight]
   }
@@ -114,9 +117,9 @@
 // EXPERIENCE
 #section-heading("Experience")
 
-#for entry in meta.experience.entries {
+#for entry in meta.experience.experienceList {
   entry-header(entry.position, entry.years)
-  
+
   for highlight in entry.highlights {
     [- #highlight]
   }
@@ -128,9 +131,9 @@
 // PROJECTS
 #section-heading("Projects")
 
-#for entry in meta.projects.entries {
+#for entry in meta.projects.projectList {
   entry-header(entry.name, entry.tech)
-  
+
   for highlight in entry.highlights {
     [- #highlight]
   }

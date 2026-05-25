@@ -10,6 +10,7 @@ urlpatterns = [
 
     path('offers/get-offers/', offer_views.get_offers_from_db),
     path('offers/scrape/', offer_views.scrape_offers),
+    path('offers/match/', offer_views.match_offers),
 
     path('documents/import-file/', document_views.import_file),
     path('documents/import-txt/', document_views.import_txt),

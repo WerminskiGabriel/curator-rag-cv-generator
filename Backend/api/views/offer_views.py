@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from ..services.offers_logic import filter_good_offers
+from ..services.offers_logic import filter_good_offers, match_offers_by_skills
 from ..services.scraper_service import scrape_and_save_offers
 import threading
 import logging
@@ -83,3 +83,30 @@ def scrape_offers(request):
         return Response(result, status=status.HTTP_502_BAD_GATEWAY)
 
     return Response(result, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def match_offers(request):
+    """
+    Matches job offers to the user's skills.
+
+    Body:
+        skills (str): comma or space separated skill list, e.g. "Python, Django, React"
+        limit  (int): max results to return (1-50, default 20)
+
+    Returns:
+        200: [{slug, title, required_skills, body, scraped_at}, ...] sorted by match score
+        400: missing/invalid skills
+    """
+    skills_text = request.data.get('skills', '').strip()
+    if not skills_text:
+        return Response({'error': 'Podaj przynajmniej jedną umiejętność.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        limit = int(request.data.get('limit', 20))
+        limit = max(1, min(limit, 50))
+    except (ValueError, TypeError):
+        limit = 20
+
+    results = match_offers_by_skills(skills_text, limit=limit)
+    return Response(results, status=status.HTTP_200_OK)

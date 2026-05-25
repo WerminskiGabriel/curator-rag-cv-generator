@@ -13,9 +13,11 @@ class UserProfileView(APIView):
 
     def get(self, request):
         user = request.user
+        profile = user.profile
         return Response({
             'username': user.username,
             'email': user.email,
+            'profile_id': profile.id,
         })
 
 @api_view(['POST'])
