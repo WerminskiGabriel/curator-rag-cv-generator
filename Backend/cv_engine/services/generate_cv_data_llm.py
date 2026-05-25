@@ -1,3 +1,5 @@
+import json
+
 from pydantic import ValidationError, RootModel
 
 from cv_engine.services.retriever import retriever
@@ -123,6 +125,16 @@ TASK: FIX ERRORS. Keep Last_RESPONSE fields that were right and change only ones
                     f"\n{'-' * 20}\nsection: {section_name}\nattempts: {attempts}\n"
                     f"Last error: {str(last_error)}\nmodel_response:\n{model_response}\n{'-' * 20}\n"
                 )
+
+                # Unwrap if LLM wrapped the output in a section key, e.g. {"personal": {...}}
+                try:
+                    raw = json.loads(model_response)
+                    if isinstance(raw, dict) and len(raw) == 1:
+                        inner = next(iter(raw.values()))
+                        if isinstance(inner, dict):
+                            model_response = json.dumps(inner)
+                except (json.JSONDecodeError, StopIteration):
+                    pass
 
                 new_section = schema.model_validate_json(model_response)
                 new_resume[section_name] = new_section.model_dump()
