@@ -126,13 +126,16 @@ TASK: FIX ERRORS. Keep Last_RESPONSE fields that were right and change only ones
                     f"Last error: {str(last_error)}\nmodel_response:\n{model_response}\n{'-' * 20}\n"
                 )
 
-                # Unwrap if LLM wrapped the output in a section key, e.g. {"personal": {...}}
+                # Unwrap if LLM wrapped output in section key, e.g. {"personal": {...}, "skills": [...]}
                 try:
                     raw = json.loads(model_response)
-                    if isinstance(raw, dict) and len(raw) == 1:
-                        inner = next(iter(raw.values()))
-                        if isinstance(inner, dict):
-                            model_response = json.dumps(inner)
+                    if isinstance(raw, dict):
+                        if section_name in raw and isinstance(raw[section_name], dict):
+                            model_response = json.dumps(raw[section_name])
+                        elif len(raw) == 1:
+                            inner = next(iter(raw.values()))
+                            if isinstance(inner, dict):
+                                model_response = json.dumps(inner)
                 except (json.JSONDecodeError, StopIteration):
                     pass
 
