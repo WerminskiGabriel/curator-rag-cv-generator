@@ -2,20 +2,14 @@ from pydantic import BaseModel, Field, RootModel
 
 
 class PersonalInfo(BaseModel):
-    telephone_label: str = Field(description="Formatted phone number for display, e.g., '+48 123 456 789'")
-    telephone_link: str = Field(
-        description="Formated phone number for links, has to have tel: prefix and no spaces, e.g., 'tel:+48123456789' or 'tel:123456789' ",
-        pattern=r"^tel:\+?[0-9]+$")
-    email: str = Field(description="Professional contact email address")
-    github_label: str = Field(description="GitHub profile label, e.g., 'github.com/username'")
-    github_link: str = Field(description="Full URL to the GitHub profile, e.g., 'https://github.com/johndoe'",
-                             pattern=r"^https://(www\.)?github\.com/[a-zA-Z0-9_-]+/?$")
-    linkedin_label: str = Field(description="LinkedIn profile label, e.g., 'linkedin.com/in/username'")
-    linkedin_link: str = Field(
-        description="Full URL to the LinkedIn profile, e.g., 'https://www.linkedin.com/in/johndoe'",
-        pattern=r"^https://www\.linkedin\.com/in/[a-zA-Z0-9_-]+/?$")
-    description: str = Field(
-        description="A concise and professional career summary (prose), IT SHOUlD BE Inside info field not outside of it")
+    telephone_label: str = Field(default="", description="Formatted phone number for display, e.g., '+48 123 456 789'")
+    telephone_link: str = Field(default="", description="Phone number for links with tel: prefix and no spaces, e.g., 'tel:+48123456789'")
+    email: str = Field(default="", description="Professional contact email address")
+    github_label: str = Field(default="", description="GitHub profile label, e.g., 'github.com/username'")
+    github_link: str = Field(default="", description="Full URL to the GitHub profile, e.g., 'https://github.com/johndoe'")
+    linkedin_label: str = Field(default="", description="LinkedIn profile label, e.g., 'linkedin.com/in/username'")
+    linkedin_link: str = Field(default="", description="Full URL to the LinkedIn profile, e.g., 'https://www.linkedin.com/in/johndoe'")
+    description: str = Field(default="", description="A concise professional career summary (prose), place it INSIDE the info object")
 
 
 class Personal(BaseModel):

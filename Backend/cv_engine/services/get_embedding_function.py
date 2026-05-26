@@ -6,9 +6,10 @@ from sentence_transformers import SentenceTransformer
 """
 from langchain_huggingface import HuggingFaceEmbeddings
 
+_embeddings = None
+
 def get_embedding_function():
-    #embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    #embeddings = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    #embeddings = OllamaEmbeddings(model="nomic-embed-text")
-    return embeddings
+    global _embeddings
+    if _embeddings is None:
+        _embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    return _embeddings
