@@ -12,7 +12,7 @@ SECTIONS = {
         ),
         "model_prompt": (
             "DO NOT FORGET ABOUT LinkedIn link and label\n"
-            "DO NOT PLACE DESCRIPTION FIELD OUTSIDE INFO, IT SHOULD BE IN IT\n",
+            "DO NOT PLACE DESCRIPTION FIELD OUTSIDE INFO, IT SHOULD BE IN IT\n"
             "DO NOT FORGET ABOUT description: str field"
         )
     },

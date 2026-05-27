@@ -92,7 +92,7 @@
   align: (left, left),
    ..meta.skills.skillsList.map(entry => (
     [#entry.category],
-    [#entry.items]
+    [#entry.items.join(", ")]
   )).flatten()
 )
 
