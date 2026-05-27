@@ -434,9 +434,41 @@
                     <div class="absolute left-0 top-12 w-1 h-12 bg-secondary rounded-r-full"></div>
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-bold">Experience</h4>
-                        <button class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+                        <button onclick="toggleExpForm()" id="exp-add-btn" class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-colors">
                             <span class="material-symbols-outlined text-sm">add</span>
                         </button>
+                    </div>
+                    <!-- Add Experience Form -->
+                    <div id="exp-form" class="hidden mb-8 p-6 rounded-lg bg-surface-container border border-primary/20 space-y-4 transition-all">
+                        <p class="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">work</span> New Experience</p>
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Position / Title</label>
+                            <input id="exp-position" type="text" placeholder="e.g. Senior Software Engineer"
+                                   class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"/>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Company</label>
+                                <input id="exp-company" type="text" placeholder="e.g. Google"
+                                       class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"/>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Years</label>
+                                <input id="exp-years" type="text" placeholder="e.g. 2021 – Present"
+                                       class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"/>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Key Highlights <span class="normal-case font-normal">(one per line)</span></label>
+                            <textarea id="exp-highlights" rows="3" placeholder="Led a team of 5 engineers&#10;Improved performance by 40%"
+                                      class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm resize-none"></textarea>
+                        </div>
+                        <div class="flex gap-3 justify-end">
+                            <button onclick="toggleExpForm()" class="px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">Cancel</button>
+                            <button onclick="addExperience()" class="px-6 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary hover:opacity-90 transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">check</span> Add
+                            </button>
+                        </div>
                     </div>
                     <div id="experience-list" class="space-y-8">
                         <p class="text-sm text-on-surface-variant">No experience data yet.</p>
@@ -446,9 +478,36 @@
                 <div class="bg-surface-container-lowest p-8 rounded-card border border-outline-variant/10">
                     <div class="flex justify-between items-center mb-6">
                         <h4 class="text-xl font-bold">Education</h4>
-                        <button class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+                        <button onclick="toggleEduForm()" id="edu-add-btn" class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-colors">
                             <span class="material-symbols-outlined text-sm">add</span>
                         </button>
+                    </div>
+                    <!-- Add Education Form -->
+                    <div id="edu-form" class="hidden mb-8 p-6 rounded-lg bg-surface-container border border-primary/20 space-y-4 transition-all">
+                        <p class="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-1"><span class="material-symbols-outlined text-sm">school</span> New Education</p>
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Degree / Program</label>
+                            <input id="edu-degree" type="text" placeholder="e.g. B.Sc. Computer Science"
+                                   class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"/>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">School / University</label>
+                                <input id="edu-school" type="text" placeholder="e.g. MIT"
+                                       class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"/>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1">Years</label>
+                                <input id="edu-years" type="text" placeholder="e.g. 2018 – 2022"
+                                       class="w-full px-4 py-3 rounded-lg bg-surface-container-lowest border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"/>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 justify-end">
+                            <button onclick="toggleEduForm()" class="px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">Cancel</button>
+                            <button onclick="addEducation()" class="px-6 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary hover:opacity-90 transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">check</span> Add
+                            </button>
+                        </div>
                     </div>
                     <div id="education-list" class="space-y-6">
                         <p class="text-sm text-on-surface-variant">No education data yet.</p>
@@ -464,8 +523,16 @@
             </div>
             <div class="lg:col-span-8">
                 <div class="bg-surface-container-lowest p-10 rounded-card shadow-[0_12px_40px_rgba(21,21,125,0.04)] border border-outline-variant/10">
+                    <div class="flex items-center gap-3 mb-6">
+                        <input id="skill-input" type="text" placeholder="Add a skill, e.g. Python, React…"
+                               class="flex-1 px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/30 focus:ring-2 focus:ring-primary outline-none font-medium text-sm"
+                               onkeydown="if(event.key==='Enter'){event.preventDefault();addSkill()}"/>
+                        <button onclick="addSkill()" class="px-5 py-3 rounded-lg text-sm font-bold bg-primary text-on-primary hover:opacity-90 transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">add</span> Add
+                        </button>
+                    </div>
                     <div id="competencies-list" class="flex flex-wrap gap-3">
-                        <span class="text-sm text-on-surface-variant">No skills data yet. Upload your CV and generate your profile.</span>
+                        <p id="competencies-placeholder" class="text-sm text-on-surface-variant">No skills data yet. Upload your CV or add skills manually.</p>
                     </div>
                 </div>
             </div>
@@ -683,8 +750,104 @@
             if (res.ok) {
                 const data = await res.json();
                 if (data.profile_id) localStorage.setItem('profile_id', data.profile_id);
+                loadProfileFromServer(data);
             }
         } catch {}
+    }
+
+    function loadProfileFromServer(data) {
+        if (!data) return;
+        // Only overwrite if server has data (non-empty fields)
+        const hasServerData = data.first_name || data.last_name || data.subtitle || data.bio ||
+            (data.education && data.education.length) ||
+            (data.experience && data.experience.length) ||
+            (data.skills && data.skills.length);
+        if (!hasServerData) return;
+
+        // Populate personal fields
+        if (data.first_name) setField('profile-first-name', data.first_name);
+        if (data.last_name)  setField('profile-last-name',  data.last_name);
+        if (data.subtitle)   setField('profile-subtitle',   data.subtitle);
+        if (data.bio)        setField('profile-bio',        data.bio);
+        if (data.email)      setField('profile-email',      data.email);
+        if (data.phone)      setField('profile-phone',      data.phone);
+        if (data.github_url) {
+            const el = document.getElementById('asset-github');
+            if (el) el.value = data.github_url;
+            const pel = document.getElementById('profile-github');
+            if (pel) pel.value = data.github_url;
+        }
+        if (data.linkedin_url) {
+            const el = document.getElementById('asset-linkedin');
+            if (el) el.value = data.linkedin_url;
+            const pel = document.getElementById('profile-linkedin');
+            if (pel) pel.value = data.linkedin_url;
+        }
+
+        // Populate experience entries
+        if (data.experience && data.experience.length) {
+            const icons = ['layers', 'hub', 'work', 'business_center', 'engineering'];
+            const expEl = document.getElementById('experience-list');
+            expEl.innerHTML = data.experience.map((e, i) => {
+                const entryId = 'exp-entry-srv-' + i;
+                return `
+                <div id="${entryId}" class="flex gap-6 group">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary">${icons[i % icons.length]}</span>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h5 class="font-bold">${escHtml(e.position || '')}</h5>
+                                <p class="text-sm text-on-surface-variant">${escHtml(e.details || '')}</p>
+                            </div>
+                            <button onclick="removeEntry('${entryId}')" class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all flex-shrink-0">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
+                        ${e.highlights && e.highlights.length ? `<ul class="mt-2 space-y-1">${e.highlights.map(h => `<li class="text-xs text-on-surface-variant">• ${escHtml(h)}</li>`).join('')}</ul>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Populate education entries
+        if (data.education && data.education.length) {
+            const eduEl = document.getElementById('education-list');
+            eduEl.innerHTML = data.education.map((e, i) => {
+                const entryId = 'edu-entry-srv-' + i;
+                return `
+                <div id="${entryId}" class="flex gap-6 group">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary">school</span>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h5 class="font-bold">${escHtml(e.degree || '')}</h5>
+                                <p class="text-sm text-on-surface-variant">${escHtml(e.details || '')}</p>
+                            </div>
+                            <button onclick="removeEntry('${entryId}')" class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all flex-shrink-0">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Populate skill tags
+        if (data.skills && data.skills.length) {
+            const compEl = document.getElementById('competencies-list');
+            const placeholder = document.getElementById('competencies-placeholder');
+            if (placeholder) placeholder.remove();
+            compEl.innerHTML = data.skills.map(s =>
+                `<span class="skill-tag bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10 cursor-pointer hover:bg-error/10 hover:text-error hover:border-error/20 transition-colors" onclick="removeSkill(this)" title="Click to remove">${escHtml(s)}</span>`
+            ).join('');
+        }
+
+        // Sync to localStorage and update completion
+        saveProfile(true);
     }
 
     function logout() {
@@ -788,6 +951,32 @@
     }
 
     function getProfileData() {
+        // Collect experience entries from the DOM
+        const expEntries = [...document.getElementById('experience-list').querySelectorAll('.flex.gap-6')].map(entry => {
+            const h5 = entry.querySelector('h5');
+            const p = entry.querySelector('p.text-sm');
+            const highlights = [...entry.querySelectorAll('li')].map(li => li.textContent.replace(/^[•\s]+/, '').trim());
+            return {
+                position: h5?.textContent.trim() || '',
+                details: p?.textContent.trim() || '',
+                highlights
+            };
+        });
+
+        // Collect education entries from the DOM
+        const eduEntries = [...document.getElementById('education-list').querySelectorAll('.flex.gap-6')].map(entry => {
+            const h5 = entry.querySelector('h5');
+            const p = entry.querySelector('p.text-sm');
+            return {
+                degree: h5?.textContent.trim() || '',
+                details: p?.textContent.trim() || ''
+            };
+        });
+
+        // Collect skill tags
+        const skillTags = [...document.getElementById('competencies-list').querySelectorAll('.skill-tag')]
+            .map(el => el.textContent.trim());
+
         return {
             first_name: document.getElementById('profile-first-name')?.textContent.trim() || '',
             last_name:  document.getElementById('profile-last-name')?.textContent.trim() || '',
@@ -795,6 +984,9 @@
             bio:        document.getElementById('profile-bio')?.textContent.trim() || '',
             email:      document.getElementById('profile-email')?.textContent.trim() || '',
             phone:      document.getElementById('profile-phone')?.textContent.trim() || '',
+            experience: expEntries,
+            education:  eduEntries,
+            skills:     skillTags
         };
     }
 
@@ -824,6 +1016,69 @@
                 const pel = document.getElementById('profile-linkedin');
                 if (pel) pel.value = saved.linkedin_url;
             }
+
+            // Restore experience entries
+            if (saved.experience && saved.experience.length) {
+                const icons = ['layers', 'hub', 'work', 'business_center', 'engineering'];
+                const expEl = document.getElementById('experience-list');
+                expEl.innerHTML = saved.experience.map((e, i) => {
+                    const entryId = 'exp-entry-loaded-' + i;
+                    return `
+                    <div id="${entryId}" class="flex gap-6 group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                            <span class="material-symbols-outlined text-secondary">${icons[i % icons.length]}</span>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h5 class="font-bold">${escHtml(e.position)}</h5>
+                                    <p class="text-sm text-on-surface-variant">${escHtml(e.details)}</p>
+                                </div>
+                                <button onclick="removeEntry('${entryId}')" class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all flex-shrink-0">
+                                    <span class="material-symbols-outlined text-sm">close</span>
+                                </button>
+                            </div>
+                            ${e.highlights && e.highlights.length ? `<ul class="mt-2 space-y-1">${e.highlights.map(h => `<li class="text-xs text-on-surface-variant">• ${escHtml(h)}</li>`).join('')}</ul>` : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            // Restore education entries
+            if (saved.education && saved.education.length) {
+                const eduEl = document.getElementById('education-list');
+                eduEl.innerHTML = saved.education.map((e, i) => {
+                    const entryId = 'edu-entry-loaded-' + i;
+                    return `
+                    <div id="${entryId}" class="flex gap-6 group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                            <span class="material-symbols-outlined text-secondary">school</span>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h5 class="font-bold">${escHtml(e.degree)}</h5>
+                                    <p class="text-sm text-on-surface-variant">${escHtml(e.details)}</p>
+                                </div>
+                                <button onclick="removeEntry('${entryId}')" class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all flex-shrink-0">
+                                    <span class="material-symbols-outlined text-sm">close</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            // Restore skill tags
+            if (saved.skills && saved.skills.length) {
+                const compEl = document.getElementById('competencies-list');
+                const placeholder = document.getElementById('competencies-placeholder');
+                if (placeholder) placeholder.remove();
+                compEl.innerHTML = saved.skills.map(s =>
+                    `<span class="skill-tag bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10 cursor-pointer hover:bg-error/10 hover:text-error hover:border-error/20 transition-colors" onclick="removeSkill(this)" title="Click to remove">${escHtml(s)}</span>`
+                ).join('');
+            }
+
             updateCompletion();
         } catch {}
     }
@@ -856,18 +1111,54 @@
     }
 
     function saveProfile(silent = false) {
-        localStorage.setItem('profile_data', JSON.stringify(getProfileData()));
-        if (!silent) {
+        const profileData = getProfileData();
+        localStorage.setItem('profile_data', JSON.stringify(profileData));
+        updateCompletion();
+
+        // Save to backend if logged in
+        if (localStorage.getItem('access_token')) {
+            const payload = {
+                first_name: profileData.first_name,
+                last_name: profileData.last_name,
+                subtitle: profileData.subtitle,
+                bio: profileData.bio,
+                phone: profileData.phone,
+                github_url: document.getElementById('profile-github')?.value || document.getElementById('asset-github')?.value || '',
+                linkedin_url: document.getElementById('profile-linkedin')?.value || document.getElementById('asset-linkedin')?.value || '',
+                education: profileData.education,
+                experience: profileData.experience,
+                skills: profileData.skills,
+            };
+            authFetch('/api/profile/', {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            }).then(res => {
+                if (!silent && res.ok) {
+                    const el = document.getElementById('save-confirm');
+                    el.textContent = 'Profile saved to your account.';
+                    el.classList.remove('hidden');
+                    setTimeout(() => el.classList.add('hidden'), 2500);
+                }
+            }).catch(() => {
+                if (!silent) {
+                    const el = document.getElementById('save-confirm');
+                    el.textContent = 'Profile saved locally (server unavailable).';
+                    el.classList.remove('hidden');
+                    setTimeout(() => el.classList.add('hidden'), 2500);
+                }
+            });
+        } else if (!silent) {
             const el = document.getElementById('save-confirm');
+            el.textContent = 'Profile saved locally. Log in to sync.';
             el.classList.remove('hidden');
             setTimeout(() => el.classList.add('hidden'), 2500);
         }
-        updateCompletion();
     }
 
     function updateCompletion() {
         const d = getProfileData();
-        const skills = document.getElementById('competencies-list')?.querySelectorAll('span').length || 0;
+        const skills = document.getElementById('competencies-list')?.querySelectorAll('.skill-tag').length || 0;
         const expItems = document.getElementById('experience-list')?.querySelectorAll('.flex.gap-6').length || 0;
         const fields = [d.first_name, d.last_name, d.subtitle, d.bio, d.email,
                         skills > 0 ? 'ok' : '', expItems > 0 ? 'ok' : ''];
@@ -893,8 +1184,8 @@
         if (!localStorage.getItem('access_token')) { openAuthModal('login'); return; }
         const skills = document.getElementById('skills-input').value.trim();
         if (!skills) {
-            // Pull skills from competencies and pre-fill
-            const tags = [...document.getElementById('competencies-list').querySelectorAll('span')]
+            // Pull skills from competencies and pre-fill (only actual skill tags, not placeholder)
+            const tags = [...document.getElementById('competencies-list').querySelectorAll('.skill-tag')]
                 .map(s => s.textContent.trim()).slice(0, 8);
             if (tags.length) document.getElementById('skills-input').value = tags.join(', ');
         }
@@ -1076,8 +1367,10 @@
         const allSkills = skillsList.flatMap(cat => cat.items || []);
         const compEl = document.getElementById('competencies-list');
         if (allSkills.length) {
+            const placeholder = document.getElementById('competencies-placeholder');
+            if (placeholder) placeholder.remove();
             compEl.innerHTML = allSkills.map(s =>
-                `<span class="bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10">${escHtml(s)}</span>`
+                `<span class="skill-tag bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10 cursor-pointer hover:bg-error/10 hover:text-error hover:border-error/20 transition-colors group" onclick="removeSkill(this)" title="Click to remove">${escHtml(s)}</span>`
             ).join('');
             const topSkills = allSkills.slice(0, 8).join(', ');
             const skillsInput = document.getElementById('skills-input');
@@ -1305,6 +1598,194 @@
 
     function escHtml(str) {
         return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Skills manual add / remove ─────────────────────────
+    function addSkill() {
+        const input = document.getElementById('skill-input');
+        const raw = input.value.trim();
+        if (!raw) { input.focus(); return; }
+
+        // Support comma-separated input
+        const skills = raw.split(',').map(s => s.trim()).filter(Boolean);
+        const compEl = document.getElementById('competencies-list');
+
+        // Remove placeholder if present
+        const placeholder = document.getElementById('competencies-placeholder');
+        if (placeholder) placeholder.remove();
+
+        // Get existing skills to avoid duplicates
+        const existing = new Set(
+            [...compEl.querySelectorAll('.skill-tag')].map(el => el.textContent.trim().toLowerCase())
+        );
+
+        skills.forEach(skill => {
+            if (existing.has(skill.toLowerCase())) return;
+            existing.add(skill.toLowerCase());
+            const tag = document.createElement('span');
+            tag.className = 'skill-tag bg-secondary-fixed-dim/10 text-on-secondary-container px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border border-secondary/10 cursor-pointer hover:bg-error/10 hover:text-error hover:border-error/20 transition-colors';
+            tag.title = 'Click to remove';
+            tag.onclick = function() { removeSkill(this); };
+            tag.textContent = skill;
+            compEl.appendChild(tag);
+        });
+
+        input.value = '';
+        input.focus();
+        saveProfile(true);
+    }
+
+    function removeSkill(el) {
+        el.style.transition = 'opacity 0.15s, transform 0.15s';
+        el.style.opacity = '0';
+        el.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+            el.remove();
+            const compEl = document.getElementById('competencies-list');
+            if (!compEl.querySelector('.skill-tag')) {
+                compEl.innerHTML = '<p id="competencies-placeholder" class="text-sm text-on-surface-variant">No skills data yet. Upload your CV or add skills manually.</p>';
+            }
+            saveProfile(true);
+        }, 150);
+    }
+
+    // ── Experience / Education manual add ──────────────────
+    function toggleExpForm() {
+        const form = document.getElementById('exp-form');
+        form.classList.toggle('hidden');
+        if (!form.classList.contains('hidden')) {
+            document.getElementById('exp-position').focus();
+        }
+    }
+
+    function toggleEduForm() {
+        const form = document.getElementById('edu-form');
+        form.classList.toggle('hidden');
+        if (!form.classList.contains('hidden')) {
+            document.getElementById('edu-degree').focus();
+        }
+    }
+
+    function addExperience() {
+        const position = document.getElementById('exp-position').value.trim();
+        const company = document.getElementById('exp-company').value.trim();
+        const years = document.getElementById('exp-years').value.trim();
+        const highlightsRaw = document.getElementById('exp-highlights').value.trim();
+
+        if (!position) {
+            document.getElementById('exp-position').focus();
+            document.getElementById('exp-position').classList.add('ring-2', 'ring-error');
+            setTimeout(() => document.getElementById('exp-position').classList.remove('ring-2', 'ring-error'), 2000);
+            return;
+        }
+
+        const highlights = highlightsRaw ? highlightsRaw.split('\n').map(l => l.trim()).filter(Boolean) : [];
+        const icons = ['layers', 'hub', 'work', 'business_center', 'engineering'];
+        const expEl = document.getElementById('experience-list');
+
+        // Clear placeholder text if present
+        if (expEl.querySelector('p.text-sm') && !expEl.querySelector('.flex.gap-6')) {
+            expEl.innerHTML = '';
+        }
+
+        const count = expEl.querySelectorAll('.flex.gap-6').length;
+        const entryId = 'exp-entry-' + Date.now();
+        const html = `
+            <div id="${entryId}" class="flex gap-6 group">
+                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary">${icons[count % icons.length]}</span>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h5 class="font-bold">${escHtml(position)}</h5>
+                            <p class="text-sm text-on-surface-variant">${escHtml(company)}${company && years ? ' • ' : ''}${escHtml(years)}</p>
+                        </div>
+                        <button onclick="removeEntry('${entryId}')" class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all flex-shrink-0">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                    ${highlights.length ? `<ul class="mt-2 space-y-1">${highlights.map(h => `<li class="text-xs text-on-surface-variant">• ${escHtml(h)}</li>`).join('')}</ul>` : ''}
+                </div>
+            </div>`;
+        expEl.insertAdjacentHTML('beforeend', html);
+
+        // Clear form & hide
+        document.getElementById('exp-position').value = '';
+        document.getElementById('exp-company').value = '';
+        document.getElementById('exp-years').value = '';
+        document.getElementById('exp-highlights').value = '';
+        toggleExpForm();
+        saveProfile(true);
+    }
+
+    function addEducation() {
+        const degree = document.getElementById('edu-degree').value.trim();
+        const school = document.getElementById('edu-school').value.trim();
+        const years = document.getElementById('edu-years').value.trim();
+
+        if (!degree) {
+            document.getElementById('edu-degree').focus();
+            document.getElementById('edu-degree').classList.add('ring-2', 'ring-error');
+            setTimeout(() => document.getElementById('edu-degree').classList.remove('ring-2', 'ring-error'), 2000);
+            return;
+        }
+
+        const eduEl = document.getElementById('education-list');
+
+        // Clear placeholder text if present
+        if (eduEl.querySelector('p.text-sm') && !eduEl.querySelector('.flex.gap-6')) {
+            eduEl.innerHTML = '';
+        }
+
+        const entryId = 'edu-entry-' + Date.now();
+        const html = `
+            <div id="${entryId}" class="flex gap-6 group">
+                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary">school</span>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h5 class="font-bold">${escHtml(degree)}</h5>
+                            <p class="text-sm text-on-surface-variant">${escHtml(school)}${school && years ? ' • ' : ''}${escHtml(years)}</p>
+                        </div>
+                        <button onclick="removeEntry('${entryId}')" class="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-full bg-error/10 flex items-center justify-center text-error hover:bg-error/20 transition-all flex-shrink-0">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        eduEl.insertAdjacentHTML('beforeend', html);
+
+        // Clear form & hide
+        document.getElementById('edu-degree').value = '';
+        document.getElementById('edu-school').value = '';
+        document.getElementById('edu-years').value = '';
+        toggleEduForm();
+        saveProfile(true);
+    }
+
+    function removeEntry(entryId) {
+        const el = document.getElementById(entryId);
+        if (el) {
+            el.style.transition = 'opacity 0.2s, transform 0.2s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(-10px)';
+            setTimeout(() => {
+                el.remove();
+                // Restore placeholder if list is now empty
+                const expEl = document.getElementById('experience-list');
+                if (!expEl.querySelector('.flex.gap-6')) {
+                    expEl.innerHTML = '<p class="text-sm text-on-surface-variant">No experience data yet.</p>';
+                }
+                const eduEl = document.getElementById('education-list');
+                if (!eduEl.querySelector('.flex.gap-6')) {
+                    eduEl.innerHTML = '<p class="text-sm text-on-surface-variant">No education data yet.</p>';
+                }
+                saveProfile(true);
+            }, 200);
+        }
     }
 
     async function scrapeAndRetry() {

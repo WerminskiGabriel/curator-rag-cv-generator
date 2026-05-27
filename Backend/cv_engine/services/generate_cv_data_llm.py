@@ -1,4 +1,5 @@
 import json
+import os
 
 from pydantic import ValidationError, RootModel
 
@@ -18,7 +19,7 @@ def generate_cv_data_llm(profile_id, offer: dict = None, progress_callback=None)
     """
     model = OllamaLLM(
         model="qwen2.5:1.5b",
-        base_url="http://ollama:11434",
+        base_url=os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434"),
         num_ctx=2048,
         num_thread=8,
         temperature=0,

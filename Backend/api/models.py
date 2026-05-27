@@ -4,6 +4,16 @@ import uuid
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=100, blank=True, default='')
+    last_name = models.CharField(max_length=100, blank=True, default='')
+    subtitle = models.CharField(max_length=200, blank=True, default='')
+    bio = models.TextField(blank=True, default='')
+    phone = models.CharField(max_length=50, blank=True, default='')
+    github_url = models.URLField(blank=True, default='')
+    linkedin_url = models.URLField(blank=True, default='')
+    education = models.JSONField(default=list, blank=True)
+    experience = models.JSONField(default=list, blank=True)
+    skills = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return f"Profile:{self.user}"

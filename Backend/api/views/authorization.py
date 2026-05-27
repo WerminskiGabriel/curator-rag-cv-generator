@@ -18,7 +18,30 @@ class UserProfileView(APIView):
             'username': user.username,
             'email': user.email,
             'profile_id': profile.id,
+            'first_name': profile.first_name,
+            'last_name': profile.last_name,
+            'subtitle': profile.subtitle,
+            'bio': profile.bio,
+            'phone': profile.phone,
+            'github_url': profile.github_url,
+            'linkedin_url': profile.linkedin_url,
+            'education': profile.education,
+            'experience': profile.experience,
+            'skills': profile.skills,
         })
+
+    def put(self, request):
+        profile = request.user.profile
+        data = request.data
+        for field in ('first_name', 'last_name', 'subtitle', 'bio', 'phone',
+                      'github_url', 'linkedin_url'):
+            if field in data:
+                setattr(profile, field, data[field])
+        for field in ('education', 'experience', 'skills'):
+            if field in data:
+                setattr(profile, field, data[field])
+        profile.save()
+        return Response({'status': 'saved'})
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
