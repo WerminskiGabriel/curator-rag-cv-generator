@@ -1,36 +1,39 @@
-# The Curator — Platforma do inteligentnego generowania CV
+# The Curator — Intelligent CV Generation Platform
 
-Aplikacja webowa, która pozwala użytkownikowi wgrać swoje CV (PDF, DOCX, obraz), a następnie automatycznie wygenerować profesjonalne CV w formacie PDF — dopasowane do wybranej oferty pracy. System scrapuje oferty z JustJoin.it, inteligentnie dopasowuje je do umiejętności użytkownika i generuje spersonalizowane CV przy pomocy lokalnego modelu LLM.
+A web application that lets users upload their CV (PDF, DOCX, image) and automatically generate a professional PDF CV
+tailored to a selected job offer. The system scrapes offers from JustJoin.it, intelligently matches them to the user's
+skills, and generates personalized CVs using a local LLM model.
 
-## Stos technologiczny
+## Tech Stack
 
-| Warstwa | Technologia |
-|---------|-------------|
-| Backend | Django + Django REST Framework |
-| Baza danych | PostgreSQL 17 + pgvector |
-| LLM | Ollama (qwen2.5:1.5b) — lokalnie |
-| Embeddingi | HuggingFace `all-MiniLM-L6-v2` (384 wymiary) |
-| Parsowanie plików | PyMuPDF (fitz) + Tesseract OCR |
-| Renderowanie PDF | Typst |
-| Frontend | HTML + Tailwind CSS + vanilla JS |
-| Infrastruktura | Docker Compose |
+| Layer          | Technology                                      |
+|----------------|-------------------------------------------------|
+| Backend        | Django + Django REST Framework                  |
+| Database       | PostgreSQL 17 + pgvector                        |
+| LLM            | Ollama (qwen2.5:1.5b) — local                   |
+| Embeddings     | HuggingFace `all-MiniLM-L6-v2` (384 dimensions) |
+| File parsing   | PyMuPDF (fitz) + Tesseract OCR                  |
+| PDF rendering  | Typst                                           |
+| Frontend       | HTML + Tailwind CSS + vanilla JS                |
+| Infrastructure | Docker Compose                                  |
 
-## Uruchomienie
+## Getting Started
 
 ```bash
 docker compose up --build
 ```
 
-Startują trzy kontenery:
-- **`db`** — PostgreSQL z pgvector (port 5432)
-- **`django-web`** — aplikacja Django przez Gunicorn (port 8000)
-- **`ollama`** — serwer LLM, który na starcie pobiera model `qwen2.5:1.5b` (port 11434)
+Three containers start:
 
-Aplikacja dostępna pod: **http://localhost:8000**
+- **`db`** — PostgreSQL with pgvector (port 5432)
+- **`django-web`** — Django app via Gunicorn (port 8000)
+- **`ollama`** — LLM server that pulls the `qwen2.5:1.5b` model on startup (port 11434)
 
-### Zmienne środowiskowe
+Application available at: **http://localhost:8000**
 
-Plik `.env` w katalogu głównym:
+### Environment Variables
+
+`.env` file in the project root:
 
 ```env
 DJANGO_SECRET_KEY=...
@@ -44,160 +47,168 @@ DATABASE_HOST=db
 DATABASE_PORT=5432
 ```
 
-## Jak to działa
+## How It Works
 
-### 1. Odczytywanie CV z pliku
+### 1. Reading CV from File
 
-Po wgraniu pliku (PDF, DOCX, PNG/JPG) system wyciąga z niego tekst:
+After uploading a file (PDF, DOCX, PNG/JPG), the system extracts text from it:
 
 ```
-Plik użytkownika
+User file
      │
      ▼
 ┌──────────────┐
-│   parser.py  │ → rozpoznaje format po rozszerzeniu
+│   parser.py  │ → detects format by extension
 └──────────────┘
      │
-     ├── PDF  → PyMuPDF (fitz) — wyciąga bloki tekstowe strona po stronie
-     ├── DOCX → python-docx — iteruje po paragrafach
-     └── Obraz → PyMuPDF OCR (pdfocr_tobytes) + Tesseract — konwertuje obraz na PDF w pamięci, potem OCR
+     ├── PDF  → PyMuPDF (fitz) — extracts text blocks page by page
+     ├── DOCX → python-docx — iterates over paragraphs
+     └── Image → PyMuPDF OCR (pdfocr_tobytes) + Tesseract — converts image to PDF in memory, then OCR
 ```
 
-Wyekstrahowany tekst trafia do modelu `Documents` w bazie danych.
+The extracted text is stored in the `Documents` model in the database.
 
-### 2. Chunking i embeddingi (wektoryzacja)
+### 2. Chunking and Embeddings (Vectorization)
 
-Po zapisaniu tekstu, automatycznie (przez Django signal `post_save`) uruchamia się pipeline embeddingowy:
+After the text is saved, the embedding pipeline runs automatically (via Django `post_save` signal):
 
-1. **Chunking** — tekst dzielony jest na fragmenty po ~400 znaków z 200-znakowym overlapem (`CharacterTextSplitter` z LangChain)
-2. **Embedding** — każdy fragment jest wektoryzowany modelem `all-MiniLM-L6-v2` (384 wymiary)
-3. **Zapis** — chunki z wektorami trafiają do tabeli `CVAnalysis` w PostgreSQL (pole `VectorField` z pgvector)
+1. **Chunking** — text is split into ~400-character fragments with 200-character overlap (`CharacterTextSplitter` from
+   LangChain)
+2. **Embedding** — each fragment is vectorized with the `all-MiniLM-L6-v2` model (384 dimensions)
+3. **Storage** — chunks with vectors are saved to the `CVAnalysis` table in PostgreSQL (`VectorField` with pgvector)
 
 ```
-Tekst CV → [chunk₁, chunk₂, ..., chunkₙ] → [vec₁, vec₂, ..., vecₙ] → PostgreSQL (pgvector)
+CV text → [chunk₁, chunk₂, ..., chunkₙ] → [vec₁, vec₂, ..., vecₙ] → PostgreSQL (pgvector)
 ```
 
-### 3. Dopasowywanie ofert do umiejętności
+### 3. Matching Offers to Skills
 
-Użytkownik wpisuje swoje umiejętności (np. "Python, React, Docker"), a system dopasowuje je do ofert:
+The user enters their skills (e.g. "Python, React, Docker"), and the system matches them to offers:
 
-**Mechanizm dopasowania (`offers_logic.py`):**
+**Matching mechanism (`offers_logic.py`):**
 
-- Dla każdej oferty z bazy system porównuje umiejętności użytkownika z `required_skills` oferty
-- Porównywanie nie jest tylko exact-match — działa **system rodzin umiejętności** (`SKILL_FAMILIES`):
-  - `python` pokrywa: `django`, `flask`, `fastapi`, `pandas`, `numpy`
-  - `javascript` pokrywa: `react`, `vue`, `angular`, `node.js`, `typescript`
-  - `docker` pokrywa: `kubernetes`, `k8s`, `helm`, `docker compose`
-  - itd.
-- Dodatkowo: substring match (`react` ↔ `react.js`)
-- Wynik: **procent dopasowania** = (umiejętności pokryte / wymagane) × 100%
-- Oferty sortowane malejąco po `match_pct`, top N zwracane do frontendu
+- For each offer in the database, the system compares the user's skills with the offer's `required_skills`
+- Matching is not just exact-match — a **skill families** system (`SKILL_FAMILIES`) is used:
+    - `python` covers: `django`, `flask`, `fastapi`, `pandas`, `numpy`
+    - `javascript` covers: `react`, `vue`, `angular`, `node.js`, `typescript`
+    - `docker` covers: `kubernetes`, `k8s`, `helm`, `docker compose`
+    - etc.
+- Additionally: substring match (`react` ↔ `react.js`)
+- Result: **match percentage** = (skills covered / required) × 100%
+- Offers sorted descending by `match_pct`, top N returned to the frontend
 
-**Przykład:**
+**Example:**
+
 ```
-Użytkownik: Python, Docker
-Oferta wymaga: Django, Flask, Kubernetes, React
+User: Python, Docker
+Offer requires: Django, Flask, Kubernetes, React
 
-→ Django ✓ (rodzina Python)
-→ Flask ✓ (rodzina Python)  
-→ Kubernetes ✓ (rodzina Docker)
+→ Django ✓ (Python family)
+→ Flask ✓ (Python family)  
+→ Kubernetes ✓ (Docker family)
 → React ✗
 
-Wynik: 75% dopasowania (3/4)
+Result: 75% match (3/4)
 ```
 
-### 4. Generowanie CV (RAG + LLM)
+### 4. CV Generation (RAG + LLM)
 
-To główny pipeline aplikacji. Łączy Retrieval-Augmented Generation z lokalnym modelem LLM:
+This is the main application pipeline. It combines Retrieval-Augmented Generation with a local LLM model:
 
 ```
-                    ┌─────────────────────────────┐
-                    │  Sekcje CV do wypełnienia:   │
+                    ┌──────────────────────────────┐
+                    │  CV sections to fill:        │
                     │  personal, skills, education,│
                     │  experience, projects        │
-                    └──────────────┬──────────────┘
+                    └──────────────┬───────────────┘
                                    │
-                    ┌──────────────▼──────────────┐
-                    │    Dla każdej sekcji:        │
+                    ┌──────────────▼───────────────┐
+                    │    For each section:         │
                     │                              │
                     │  1. RAG query → pgvector     │
                     │     (cosine distance)        │
-                    │     → najlepsze chunki CV    │
+                    │     → best CV chunks         │
                     │                              │
-                    │  2. Prompt do LLM:           │
-                    │     chunki + schemat JSON    │
-                    │     + kontekst oferty        │
+                    │  2. Prompt to LLM:           │
+                    │     chunks + JSON schema     │
+                    │     + offer context          │
                     │                              │
-                    │  3. LLM (qwen2.5:1.5b)      │
-                    │     → JSON z danymi sekcji   │
+                    │  3. LLM (qwen2.5:1.5b)       │
+                    │     → section JSON data      │
                     │                              │
-                    │  4. Walidacja Pydantic       │
-                    │     (retry do 5x jeśli błąd) │
-                    └──────────────┬──────────────┘
+                    │  4. Pydantic validation      │
+                    │     (retry up to 5x on error)│
+                    └──────────────┬───────────────┘
                                    │
-                    ┌──────────────▼──────────────┐
-                    │  Złożony JSON CV             │
-                    │  → szablon Typst (resume.typ)│
-                    │  → kompilacja do PDF         │
-                    └─────────────────────────────┘
+                    ┌──────────────▼────────────────┐
+                    │  Assembled CV JSON            │
+                    │  → Typst template (resume.typ)│
+                    │  → compile to PDF             │
+                    └───────────────────────────────┘
 ```
 
-**Krok po kroku:**
+**Step by step:**
 
-1. **Retrieval (RAG)** — dla każdej sekcji CV (np. "experience") system buduje zapytanie semantyczne, wektoryzuje je i szuka najbliższych chunków w pgvector (cosine distance). Jeśli generujemy CV pod konkretną ofertę — zapytanie RAG jest wzbogacone o kontekst oferty (tytuł, wymagane umiejętności)
+1. **Retrieval (RAG)** — for each CV section (e.g. "experience"), the system builds a semantic query, vectorizes it, and
+   searches for the nearest chunks in pgvector (cosine distance). When generating a CV for a specific offer — the RAG
+   query is enriched with offer context (title, required skills)
 
-2. **Generowanie JSON przez LLM** — model Ollama `qwen2.5:1.5b` dostaje prompt z: wyciągniętymi chunkami, schematem JSON (Pydantic), i opcjonalnie kontekstem oferty. Zwraca strukturalny JSON pasujący do schematu
+2. **JSON generation via LLM** — the Ollama `qwen2.5:1.5b` model receives a prompt with: retrieved chunks, JSON schema (
+   Pydantic), and optionally offer context. It returns structured JSON matching the schema
 
-3. **Walidacja i retry** — odpowiedź LLM jest walidowana przez Pydantic. Jeśli walidacja nie przechodzi, system wysyła do LLM informację o błędach i prosi o poprawkę — do 5 prób
+3. **Validation and retry** — the LLM response is validated by Pydantic. If validation fails, the system sends error
+   details back to the LLM and requests a fix — up to 5 attempts
 
-4. **Renderowanie PDF** — gotowy JSON trafia do szablonu Typst (`resume.typ`), który jest kompilowany do PDF przez binding Pythona do Typst
+4. **PDF rendering** — the finished JSON is passed to the Typst template (`resume.typ`), which is compiled to PDF via
+   the Python Typst binding
 
-### 5. Scrapowanie ofert
+### 5. Offer Scraping
 
-System pobiera oferty z JustJoin.it:
+The system fetches offers from JustJoin.it:
 
-1. Pobiera listę ofert z API kandydackiego JustJoin.it (do 100 ofert)
-2. Dla każdego sluga pobiera szczegóły oferty (tytuł, body, required_skills)
-3. Zapisuje/aktualizuje w lokalnej bazie PostgreSQL (`JobOffer`)
+1. Fetches the offer list from the JustJoin.it candidate API (up to 100 offers)
+2. For each slug, fetches offer details (title, body, required_skills)
+3. Saves/updates in the local PostgreSQL database (`JobOffer`)
 
-## Struktura projektu
+## Project Structure
 
 ```
 Backend/
-├── api/                    # REST API — auth, dokumenty, oferty
+├── api/                    # REST API — auth, documents, offers
 │   ├── models.py           # Profile, Documents, JobOffer
 │   ├── views/              # authorization, document_views, offer_views
 │   └── services/           # parser, scraper, offers_logic
 │
-├── cv_engine/              # Pipeline generowania CV
-│   ├── models.py           # CVAnalysis (embeddingi), GeneratedResume
+├── cv_engine/              # CV generation pipeline
+│   ├── models.py           # CVAnalysis (embeddings), GeneratedResume
 │   ├── services/
-│   │   ├── chunker.py      # Dzielenie tekstu na fragmenty
-│   │   ├── embedder.py     # Wektoryzacja chunków
-│   │   ├── retriever.py    # Wyszukiwanie semantyczne (pgvector)
+│   │   ├── chunker.py      # Text splitting into fragments
+│   │   ├── embedder.py     # Chunk vectorization
+│   │   ├── retriever.py    # Semantic search (pgvector)
 │   │   ├── generate_cv_data_llm.py  # RAG + LLM pipeline
-│   │   ├── generate_save_cv.py      # Kompilacja Typst → PDF
-│   │   └── sections.py     # Definicje sekcji CV
+│   │   ├── generate_save_cv.py      # Typst → PDF compilation
+│   │   └── sections.py     # CV section definitions
 │   └── templates_cv/
-│       └── resume.typ       # Szablon Typst
+│       └── resume.typ       # Typst template
 │
 ├── frontend/               # Django templates
 │   └── templates/
-│       └── home.html        # Single-page aplikacja
+│       └── home.html        # Single-page application
 │
-├── offers/                 # Standalone skrypty scrapingu
+├── offers/                 # Standalone scraping scripts
 ├── Dockerfile
 └── requirements.txt
 ```
 
-## Autentykacja
+## Authentication
 
-JWT przez `djangorestframework-simplejwt`:
-- Rejestracja → `POST /api/register/`
-- Logowanie → `POST /api/token/`
-- Odświeżanie tokenu → `POST /api/token/refresh/`
-- Dane profilu (zapis/odczyt) → `GET/PUT /api/profile/`
+JWT via `djangorestframework-simplejwt`:
 
-## Licencja
+- Register → `POST /api/register/`
+- Login → `POST /api/token/`
+- Refresh token → `POST /api/token/refresh/`
+- Profile data (read/write) → `GET/PUT /api/profile/`
 
-MIT — patrz [LICENSE.md](LICENSE.md)
+## License
+
+This project is licensed under the MIT License.
