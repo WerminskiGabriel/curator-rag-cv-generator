@@ -4,6 +4,13 @@ A web application that lets users upload their CV (PDF, DOCX, image) and automat
 tailored to a selected job offer. The system scrapes offers from JustJoin.it, intelligently matches them to the user's
 skills, and generates personalized CVs using a local LLM model.
 
+| uploading portfolio | registration |
+|------|---------|
+| <img  height="600" alt="home_page" src="https://github.com/user-attachments/assets/612db979-49b8-45a3-8797-a4752ca8c0d1" /> | <img height="600" alt="register" src="https://github.com/user-attachments/assets/52b4f7e5-6109-4da3-a27a-ef2694f95e9b" />|
+
+<img   alt="offers" src="https://github.com/user-attachments/assets/e7ed3e58-9bb8-403a-bba0-ae8267ba5978" />
+
+
 ## Tech Stack
 
 | Layer          | Technology                                      |
